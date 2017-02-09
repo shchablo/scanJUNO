@@ -361,16 +361,16 @@ void main_page(unsigned int *len)
 				"<div id='chart'></div>"
 				"<div id='set_stat'>"
 					"<div id='status'>"
-						"<div id='s1'>""</div>"
-						"<div id='s2'>""</div>"
+		//				"<div id='s1'>""</div>"
+		//				"<div id='s2'>""</div>"
 						"<div id='s3'>""</div>"
 						"<div id='s4'>""</div>"
 						"<div id='s5'>""</div>"
 						"<div id='s6'>""</div>"
+						"<div id='foo'>""</div>"
 					"</div>"
 					"<div id='set1'></div>"
 					"<div id='set2'></div>"
-					//"<div id='foo'>""</div>"
 				"</div>"
 			"</div>"
 		"</div>"
@@ -388,8 +388,28 @@ void main_page(unsigned int *len)
 int simple_server()
 {
 
-	unsigned char addr = 0; IOWR_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE, addr);
+	// common
+    unsigned char valuelong[32] = {0};
+    unsigned char value[3] = {0};
+    int valueInt = 0;
+	char array[32] = {0};
+	int delay = 50000; // ml sec.
+
+	// dac
+	unsigned int dacTime = 0; // sec
+	int dacInt= 0; // sec
+
+	// addr
+	unsigned char addrChar = 0; IOWR_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE, addrChar);
+	int addrInt = 0;
+	char addrArray[3] = {0};
+	unsigned char addrTmp = 0;
+
+
+	// data
 	unsigned char wdata = 0x00; IOWR_ALTERA_AVALON_PIO_DATA(PIO_WDATA_BASE, wdata);
+	int wdataInt = 0;
+
 	unsigned char rdata = 0x00; rdata = IORD_ALTERA_AVALON_PIO_DATA(PIO_RDATA_BASE);
 	char signals = 0x00; IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, signals);
 
@@ -410,9 +430,14 @@ int simple_server()
     unsigned char payloadlen = 0;
     char str[30];
     char cmdval;
-    unsigned char value[3];
 
     float live_time_count;
+
+
+
+    int iBuf = 0;
+    int iiBuf = 0;
+    int dacBuf[200] = {0};
 
    /*initialize enc28j60*/
    enc28j60Init(mymac);
@@ -494,16 +519,14 @@ int simple_server()
             					}
             				}
             				// send value of addr to the board
-            				addr = atoi(value);
-            				IOWR_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE, addr);
+            				addrChar = atoi(value);
+            				addrInt = (int)addrChar;
+            				IOWR_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE, addrChar);
             				signals = 0x01; IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, signals); // write addr signal
             				signals = 0x00; IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, signals);
-            				// print page of setting
-            				//print_setting(&plen, addr, &gen_freq, &resTime);
-            				//goto SENDTCP;
 
-            					plen = fill_tcp_data_p(buf, 0, PSTR("HTTP/1.0 200 OK"));
-								goto SENDTCP;
+            				plen = fill_tcp_data_p(buf, 0, PSTR("HTTP/1.0 200 OK"));
+							goto SENDTCP;
             			}
 
             			// DATA
@@ -514,15 +537,72 @@ int simple_server()
 									break;
 								}
 							}
-							// send value of addr to the board
 							wdata = atoi(value);
+							wdataInt = (int)wdata;
+							// send value of data to the board
 							IOWR_ALTERA_AVALON_PIO_DATA(PIO_WDATA_BASE, wdata);
 							signals = 0x08; IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, signals); // write data signal
 							signals = 0x00; IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, signals);
+
 							plen = fill_tcp_data_p(buf, 0, PSTR("HTTP/1.0 200 OK"));
 							goto SENDTCP;
 						}
 
+            			// DAC
+						if((strncmp("dac=", (char *) &(buf[i]), 4) == 0)) {	// parsing data
+							for(j = 0; j < 32; j++) {
+								if((strncmp("&", (char *) &(buf[i+4+j]), 1) == 0)) {
+									memcpy(valuelong, (unsigned char *) &(buf[i+4]), j+1);
+									break;
+								}
+							}
+							addrTmp = addrChar;
+							addrChar = 0x24;
+							addrInt = (int)addrChar;
+							IOWR_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE, addrChar);
+							signals = 0x01; IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, signals); // write addr signal
+							signals = 0x00; IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, signals);
+							for(i = 0; i < delay; i++);
+
+							wdataInt = atoi(valuelong);
+							dacInt = atoi(valuelong);
+							wdata = wdataInt;
+							IOWR_ALTERA_AVALON_PIO_DATA(PIO_WDATA_BASE, wdata);
+							signals = 0x08; IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, signals); // write data signal
+							signals = 0x00; IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, signals);
+							for(i = 0; i < delay; i++);
+
+							addrChar = 0x25;
+							addrInt = (int)addrChar;
+							IOWR_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE, addrChar);
+							signals = 0x01; IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, signals); // write addr signal
+							signals = 0x00; IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, signals);
+							for(i = 0; i < delay; i++);
+
+							wdataInt =atoi(valuelong) >> 8;
+							wdata = wdataInt;
+							IOWR_ALTERA_AVALON_PIO_DATA(PIO_WDATA_BASE, wdata);
+							signals = 0x08; IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, signals); // write data signal
+							signals = 0x00; IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, signals);
+							for(i = 0; i < delay; i++);
+
+							addrChar = addrTmp;
+							IOWR_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE, addrChar);
+							signals = 0x01; IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, signals); // write addr signal
+							signals = 0x00; IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, signals);
+
+							// check "dac write signal"
+							if(iBuf < 200)
+								iBuf = iBuf + 1;
+							if(iBuf == 200) {
+								for(iiBuf = 1; iiBuf < iBuf; iiBuf++)
+									dacBuf[iiBuf - 1] = dacBuf[iiBuf];
+							}
+							dacBuf[iBuf] = dacInt;
+
+							plen = fill_tcp_data_p(buf, 0, PSTR("HTTP/1.0 200 OK"));
+							goto SENDTCP;
+						}
 
             		}
             		plen = fill_tcp_data_p(buf, 0, PSTR("HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\n<h1>200 OK</h1>"));
@@ -532,15 +612,15 @@ int simple_server()
             	goto SENDTCP;
             }
 
-            // new main
             // main page
             if(strncmp("/ ", (char *) &(buf[dat_p + 4]), 2) == 0) {
            	plen = fill_tcp_data_p(buf, 0, PSTR("HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\n"));
            	plen = fill_tcp_data_p(buf, plen, PSTR(""
            			"<p style='text-align: center;'>JOINT INSTITUTE FOR NUCLEAR RESEARCH</p>"
             			"<p style='text-align: center;'>PMTLab WEBSCAN, version: "));
-				addr = atoi(value);
-				IOWR_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE, addr);
+				addrChar = 0;
+				addrInt = (int)addrChar;
+				IOWR_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE, addrChar);
 				signals = 0x01; IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, signals); // write addr signal
 				signals = 0x00; IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, signals);
 				rdata = 0x00; rdata = IORD_ALTERA_AVALON_PIO_DATA(PIO_RDATA_BASE);
@@ -564,34 +644,33 @@ int simple_server()
 							            			"</form>"));
             	goto SENDTCP;
             }
-
 			 // setting
 			 	 if(strncmp("/set1.html ", (char *) &(buf[dat_p + 4]), 9) == 0) {
 			 		plen = fill_tcp_data_p(buf, 0, PSTR("HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\n"));
 			 		// generator
-			 		plen = fill_tcp_data_p(buf, plen, PSTR("<p style='text-align: center;'>SETTING</p>"));
+			 	/*	plen = fill_tcp_data_p(buf, plen, PSTR("<p style='text-align: center;'>SETTING</p>"));
 					plen = fill_tcp_data_p(buf, plen, PSTR("<p style='text-align: center;'>GENERATOR:</p>"
 																"<form id='idGEN'>"
 																"<p style='text-align: center;'> freq:"
 																"<input name='freq' size='8' type='text' value='000' />"
 																"<input name='flag' size='8' type='hidden' value='flag' />"
 																"<input type='submit' value='OK' />"
-																"</form></p>"));
+																"</form></p>")); */
 					// gate
-					plen = fill_tcp_data_p(buf, plen, PSTR(""
+				/*	plen = fill_tcp_data_p(buf, plen, PSTR(""
 															"<p style='text-align: center;'>GATE:</p>"
 															"<form id='idGate'>"
 															"<p style='text-align: center;'> gate:"
 															"<input name='gate' size='8' type='text' value='000' />"
 															"<input name='flag' size='8' type='hidden' value='flag' />"
 															"<input type='submit' value='OK' />"
-															"</p></form>"));
+															"</p></form>")); */
 					// dac
 					plen = fill_tcp_data_p(buf, plen, PSTR(""
 															"<p style='text-align: center;'>DAC:</p>"
 															"<form id='idDac'>"
-															"<p style='text-align: center;'> &#20 volts:"
-															"<input name='dac' size='8' type='text' value='000' />"
+															"<p style='text-align: center;'> &#20 code:"
+															"<input name='dac' size='8' type='text' value='0000' />"
 															"<input name='flag' size='8' type='hidden' value='flag' />"
 															"<input type='submit' value='OK' />"
 															"</p></form>"));
@@ -640,9 +719,10 @@ int simple_server()
 					plen = fill_tcp_data_p(buf, plen, PSTR("<div id='main'>"));
 					plen = fill_tcp_data_p(buf, plen, PSTR("<p style='text-align: left;'>&#20</p>"));
 					plen = fill_tcp_data_p(buf, plen, PSTR("<p style='text-align: center;'>gate: &#20 "));
-					char addr_array[3];
-					sprintf(addr_array,"%d",(int)addr);
-					plen = fill_tcp_data_p(buf, plen, addr_array);
+				//	char addr_array[3];
+				//	addrInt = (int)addrChar;
+					sprintf(addrArray,"%d", addrInt);
+					plen = fill_tcp_data_p(buf, plen, addrArray);
 					plen = fill_tcp_data_p(buf, plen, PSTR("</p>"));
 					plen = fill_tcp_data_p(buf, plen, PSTR("</div>"));
 					goto SENDTCP;
@@ -651,11 +731,10 @@ int simple_server()
 					plen = fill_tcp_data_p(buf, 0, PSTR("HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\n"));
 					plen = fill_tcp_data_p(buf, plen, PSTR("<div id='main'>"));
 					plen = fill_tcp_data_p(buf, plen, PSTR("<p style='text-align: left;'>&#20</p>"));
-					plen = fill_tcp_data_p(buf, plen, PSTR("<p style='text-align: center;'>volts: &#20 "));
-					char addr_array[3];
-					sprintf(addr_array,"%d",(int)addr);
-					plen = fill_tcp_data_p(buf, plen, addr_array);
-					plen = fill_tcp_data_p(buf, plen, PSTR(", mV </p>"));
+					plen = fill_tcp_data_p(buf, plen, PSTR("<p style='text-align: center;'>code: &#20 "));
+					sprintf(addrArray,"%d", dacInt);
+					plen = fill_tcp_data_p(buf, plen, addrArray);
+					plen = fill_tcp_data_p(buf, plen, PSTR("</p>"));
 					plen = fill_tcp_data_p(buf, plen, PSTR("</div>"));
 					goto SENDTCP;
 				 }
@@ -665,9 +744,10 @@ int simple_server()
 					plen = fill_tcp_data_p(buf, plen, PSTR("<div id='main'>"));
 					plen = fill_tcp_data_p(buf, plen, PSTR("<p style='text-align: left;'>&#20</p>"));
 					plen = fill_tcp_data_p(buf, plen, PSTR("<p style='text-align: center;'>addr: &#20 "));
-					char addr_array[3];
-					sprintf(addr_array,"%d",(int)addr);
-					plen = fill_tcp_data_p(buf, plen, addr_array);
+					addrChar = IORD_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE);
+					addrInt = (int)addrChar;
+					sprintf(addrArray,"%d", addrInt);
+					plen = fill_tcp_data_p(buf, plen, addrArray);
 					plen = fill_tcp_data_p(buf, plen, PSTR("</p>"));
 					plen = fill_tcp_data_p(buf, plen, PSTR("</div>"));
 					goto SENDTCP;
@@ -713,6 +793,16 @@ int simple_server()
 			 					freq = 0;
 			 					goto SENDTCP;
 			 				 }
+			 				 // dac buf value
+							 if(strncmp("/live-dac ", (char *) &(buf[dat_p + 4]), 8) == 0) {
+								 plen = fill_tcp_data_p(buf, 0, PSTR("HTTP/1.0 200 OK\r\nContent-type: text/json\r\n\r\n"));
+								char array[5];
+								for(iiBuf = 0; iiBuf < iBuf; iiBuf++) {
+									sprintf(array,"%d;", (int)dacBuf[iiBuf]);
+									plen = fill_tcp_data_p(buf, plen, array);
+								}
+								goto SENDTCP;
+							 }
 			  // freq
 						 if(strncmp("/freq.html", (char *) &(buf[dat_p + 4]), 9) == 0) {
 							live_time_count = 0;
@@ -828,6 +918,8 @@ int simple_server()
 						 "console.log( $( this ).serialize() );"
 						 "var param = $( this ).serialize();"
 						 "$.post('http://192.168.1.4/', param  );"
+						 "$( '#s5' ).load( 'http://192.168.1.4/addr.html #main' );"
+						 "$( '#s6' ).load( 'http://192.168.1.4/data.html #main' );"
 						 "$( '#s3' ).load( 'http://192.168.1.4/dac.html #main' );"
 						 "});"
 				 ));

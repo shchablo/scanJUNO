@@ -182,32 +182,11 @@
          type = "int";
       }
    }
-   element onchip_mem.s1
-   {
-      datum _tags
-      {
-         value = "";
-         type = "String";
-      }
-      datum baseAddress
-      {
-         value = "131072";
-         type = "String";
-      }
-   }
-   element pio_wdata.s1
+   element LAN_RST.s1
    {
       datum baseAddress
       {
-         value = "6192";
-         type = "String";
-      }
-   }
-   element pio_signals.s1
-   {
-      datum baseAddress
-      {
-         value = "6176";
+         value = "6272";
          type = "String";
       }
    }
@@ -227,19 +206,19 @@
          type = "String";
       }
    }
-   element LAN_RST.s1
+   element pio_addr.s1
    {
       datum baseAddress
       {
-         value = "6272";
+         value = "6224";
          type = "String";
       }
    }
-   element LAN_NINT.s1
+   element pio_signals.s1
    {
       datum baseAddress
       {
-         value = "6288";
+         value = "6176";
          type = "String";
       }
    }
@@ -251,11 +230,16 @@
          type = "String";
       }
    }
-   element pio_addr.s1
+   element onchip_mem.s1
    {
+      datum _tags
+      {
+         value = "";
+         type = "String";
+      }
       datum baseAddress
       {
-         value = "6224";
+         value = "131072";
          type = "String";
       }
    }
@@ -264,6 +248,22 @@
       datum baseAddress
       {
          value = "6304";
+         type = "String";
+      }
+   }
+   element LAN_NINT.s1
+   {
+      datum baseAddress
+      {
+         value = "6288";
+         type = "String";
+      }
+   }
+   element pio_wdata.s1
+   {
+      datum baseAddress
+      {
+         value = "6192";
          type = "String";
       }
    }
@@ -393,7 +393,7 @@
   <parameter name="useASMIAtom" value="false" />
   <parameter name="clockRate" value="50000000" />
   <parameter name="deviceFamilyString" value="Cyclone III" />
-  <parameter name="autoInitializationFileName" value="$${FILENAME}_epcs" />
+  <parameter name="autoInitializationFileName" value="sopc_epcs" />
  </module>
  <module
    kind="altera_avalon_jtag_uart"
@@ -483,7 +483,7 @@
   <parameter name="initMemContent" value="true" />
   <parameter name="initializationFileName" value="onchip_mem" />
   <parameter name="instanceID" value="NONE" />
-  <parameter name="memorySize" value="40000" />
+  <parameter name="memorySize" value="42000" />
   <parameter name="readDuringWriteMode" value="DONT_CARE" />
   <parameter name="simAllowMRAMContentsFile" value="false" />
   <parameter name="simMemInitOnlyFilename" value="0" />
@@ -608,8 +608,8 @@
   <parameter name="tightlyCoupledInstructionMaster1AddrWidth" value="1" />
   <parameter name="tightlyCoupledInstructionMaster2AddrWidth" value="1" />
   <parameter name="tightlyCoupledInstructionMaster3AddrWidth" value="1" />
-  <parameter name="instSlaveMapParam"><![CDATA[<address-map><slave name='epcs.epcs_control_port' start='0x0' end='0x800' /><slave name='cpu.jtag_debug_module' start='0x1000' end='0x1800' /><slave name='onchip_mem.s1' start='0x20000' end='0x29C40' /></address-map>]]></parameter>
-  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='epcs.epcs_control_port' start='0x0' end='0x800' /><slave name='cpu.jtag_debug_module' start='0x1000' end='0x1800' /><slave name='LAN.spi_control_port' start='0x1800' end='0x1820' /><slave name='pio_signals.s1' start='0x1820' end='0x1830' /><slave name='pio_wdata.s1' start='0x1830' end='0x1840' /><slave name='pio_rdata.s1' start='0x1840' end='0x1850' /><slave name='pio_addr.s1' start='0x1850' end='0x1860' /><slave name='pio_count.s1' start='0x1860' end='0x1870' /><slave name='pio_time.s1' start='0x1870' end='0x1880' /><slave name='LAN_RST.s1' start='0x1880' end='0x1890' /><slave name='LAN_NINT.s1' start='0x1890' end='0x18A0' /><slave name='LAN_CS.s1' start='0x18A0' end='0x18B0' /><slave name='jtag_uart.avalon_jtag_slave' start='0x18B0' end='0x18B8' /><slave name='sysid.control_slave' start='0x18B8' end='0x18C0' /><slave name='onchip_mem.s1' start='0x20000' end='0x29C40' /></address-map>]]></parameter>
+  <parameter name="instSlaveMapParam"><![CDATA[<address-map><slave name='epcs.epcs_control_port' start='0x0' end='0x800' /><slave name='cpu.jtag_debug_module' start='0x1000' end='0x1800' /><slave name='onchip_mem.s1' start='0x20000' end='0x2A410' /></address-map>]]></parameter>
+  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='epcs.epcs_control_port' start='0x0' end='0x800' /><slave name='cpu.jtag_debug_module' start='0x1000' end='0x1800' /><slave name='LAN.spi_control_port' start='0x1800' end='0x1820' /><slave name='pio_signals.s1' start='0x1820' end='0x1830' /><slave name='pio_wdata.s1' start='0x1830' end='0x1840' /><slave name='pio_rdata.s1' start='0x1840' end='0x1850' /><slave name='pio_addr.s1' start='0x1850' end='0x1860' /><slave name='pio_count.s1' start='0x1860' end='0x1870' /><slave name='pio_time.s1' start='0x1870' end='0x1880' /><slave name='LAN_RST.s1' start='0x1880' end='0x1890' /><slave name='LAN_NINT.s1' start='0x1890' end='0x18A0' /><slave name='LAN_CS.s1' start='0x18A0' end='0x18B0' /><slave name='jtag_uart.avalon_jtag_slave' start='0x18B0' end='0x18B8' /><slave name='sysid.control_slave' start='0x18B8' end='0x18C0' /><slave name='onchip_mem.s1' start='0x20000' end='0x2A410' /></address-map>]]></parameter>
   <parameter name="clockFrequency" value="50000000" />
   <parameter name="deviceFamilyName" value="Cyclone III" />
   <parameter name="internalIrqMaskSystemInfo" value="7" />
