@@ -31,6 +31,8 @@ module pwm
 	input wire [7:0]data_in, output wire [7:0]data_out,
 	input wire we, input wire init, input wire res,
 
+	input wire we32,
+	input wire [31:0]data_in32,
 	output reg out
 
 );
@@ -57,11 +59,13 @@ begin
 	if(init) begin
 		ram[0] <= 0;
 		ram[1] <= 0;
-		ram[2] <= 249;
+		
+		ram[2] <= 10;
 		ram[3] <= 0;
 		ram[4] <= 0;
 		ram[5] <= 0;
-		ram[6] <= 250;
+		
+		ram[6] <= 10;
 		ram[7] <= 0;
 		ram[8] <= 0;
 		ram[9] <= 0;
@@ -69,6 +73,16 @@ begin
 		zero_counter <= 0;
 		signal_counter <= 0;
 	end
+	
+	if(we32) begin
+		if(addr == 8'h46) begin
+			ram[2] <= data_in32[7:0];
+			ram[3] <= data_in32[15:8];
+			ram[4] <= data_in32[23:16];
+			ram[5] <= data_in32[31:24];			
+	  	end
+	end
+	
 	
 	  // write memory	
 	if(we) begin

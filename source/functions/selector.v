@@ -72,7 +72,8 @@ begin
    8'h42:  data = pwm;
    8'h43:  data = pwm;
    8'h44:  data = pwm;
-   8'h45:  data = pwm;	  
+   8'h45:  data = pwm;
+	8'h46:  data = pwm;	
   default:
   	data = 0;
   endcase

@@ -88,6 +88,12 @@ wire        sread_export;              //                        sread.export
 		
 wire        cread_export;              //                        cread.export
 wire        addr_write_export;
+
+wire        startStep_export;
+wire        stopStep_export;
+wire        swrite32_export;
+wire [31:0] wdata32_export;
+
 eth_top eth_inst (
 	key_restart,                   //             clk_clk_in_reset.reset_n
 	out_port_from_the_LAN_RST, //  LAN_RST_external_connection.export
@@ -108,11 +114,18 @@ eth_top eth_inst (
 	sread_export,              //                        sread.export
 		
 	cread_export,               //                        cread.export
-	addr_write_export
+	addr_write_export,
+	
+	startStep_export,
+	stopStep_export,
+	
+	swrite32_export,
+	wdata32_export
 
 );
 // Instantiation command. Signals and registers declared.
 wire write;
+wire write32;
 wire [7:0]data;
 wire [7:0]addr;
 command command_inst
@@ -131,25 +144,27 @@ command command_inst
 	write_vjtag,
 	swrite_export,
 	
-	
 	write,
+	
 	wdata_export,
 	data_vjtag_out,
-	
 	
 	data
 );	
 
 // Instantiation PWM. Signals and registers declared.
 wire [7:0]data_pwm;
-wire pwm_test; // pwm_out
+wire pwm_test; // pwm_out - should be
 pwm pwm_inst(
 	clock50Mhz,
 	addr,
 	data, data_pwm,
 	write, init, reset,
 
-	 pwm_test
+	swrite32_export,
+   wdata32_export,
+	
+	pwm_test
 );
 // Instantiation counter. Signals and registers declared.
 wire [7:0]data_counter;
@@ -164,7 +179,10 @@ counter counter_inst
 	time_export,
 	signals_export,
 	
-	pwm_test //count
+	startStep_export,
+	stopStep_export,
+	
+	pwm_test //count - should be
 );
 
 // Instantiation gate. Signals and registers declared.

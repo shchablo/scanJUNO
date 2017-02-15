@@ -21,7 +21,13 @@ module eth_top(
 		output wire        sread_export,              //                        sread.export
 		
 		output wire        cread_export,               //                        cread.export
-		output wire        addr_write_export               //                        cread.export
+		output wire        addr_write_export,               //                        cread.export
+		
+		output wire 		 startStep_export,
+		input wire 		 	 stopStep_export,
+		
+		output wire  		  swrite32_export,
+		output wire [31:0]  wdata32_export	
 	);
 
 wire  SS_n_from_the_LAN;
@@ -31,8 +37,12 @@ wire  sdo_from_the_epcs;         //                             .sdo
 wire  data0_to_the_epcs;         //                             .data0
 
 wire        [7:0]signals_export_array;             //                       swrite.export
-		
+wire        [7:0]status_export_array;       		
 
+assign status_export_array[4] = stopStep_export;
+
+assign swrite32_export = signals_export_array[5];
+assign startStep_export = signals_export_array[4];
 assign swrite_export = signals_export_array[3];
 assign sread_export = signals_export_array[2];
 assign cread_export = signals_export_array[1];
@@ -63,7 +73,10 @@ sopc sopc_inst (
 		
 		wdata_export,              //                        wdata.export
 		
-		signals_export_array
+		signals_export_array,
+		status_export_array,
+		
+		wdata32_export
 );
 
 endmodule
