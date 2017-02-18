@@ -49,6 +49,7 @@ module grpTop(
 	input  wire  in_port_to_the_LAN_NINT,   // LAN_NINT_external_connection.export
 	
 	output pwm_out,
+	output [9:0]ch_pwm_out,
 	
 	input count
   );
@@ -154,6 +155,7 @@ command command_inst
 
 // Instantiation PWM. Signals and registers declared.
 wire [7:0]data_pwm;
+wire gen;
 wire pwm_test; // pwm_out - should be
 pwm pwm_inst(
 	clock50Mhz,
@@ -164,10 +166,11 @@ pwm pwm_inst(
 	swrite32_export,
    wdata32_export,
 	
-	pwm_test
+	pwm_test // gen - should be
 );
 // Instantiation counter. Signals and registers declared.
 wire [7:0]data_counter;
+wire start_dac;
 counter counter_inst
  (
 	clock50Mhz,
@@ -179,7 +182,7 @@ counter counter_inst
 	time_export,
 	signals_export,
 	
-	startStep_export,
+	start_dac,
 	stopStep_export,
 	
 	pwm_test //count - should be
@@ -195,7 +198,11 @@ gate gate_inst(
   
   gate_out,
   keys_gate,
-  gate_led
+  gate_led,
+  
+  gen,
+  ch_pwm_out,
+  pwm_out
   );
 // Instantiation DAC. Signals and registers declared.
 wire [7:0]data_DAC;
@@ -210,7 +217,10 @@ wire [7:0]data_DAC;
  SCK,
  nCS,
  nLDAC,
- SDI
+ SDI,
+ 
+ startStep_export,
+ start_dac
 );
 // Instantiation addr_indicators. Signals and registers declared.
 indicator16 indicator16_hex0(
@@ -230,7 +240,6 @@ assign version[7:0] = 8'b00010000;
 // Instantiation selector. Signals and registers declared.
 selector selector_data_vjtag_in(
  addr,
- data_mosi,
  data_gate,
  data_counter,
  data_pwm,

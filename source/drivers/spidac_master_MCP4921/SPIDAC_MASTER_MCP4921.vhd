@@ -63,7 +63,7 @@ architecture Behavioral of SPIDAC_MASTER_MCP4921 is
 	constant IGNORE:std_logic := '0'; -- 0:use, 1:ignore
 	constant BUFFERED:std_logic := '0'; -- 0:unbuffered, 1:buffered
 	constant GAIN:std_logic := '1'; -- 0:2X, 1:1X
-	constant ACT:std_logic := '1'; -- 0:shutdown, 1:active
+	constant ACT:std_logic := '0'; -- 0:shutdown, 1:active
 
 begin
 	

@@ -1,34 +1,35 @@
-/*********************************************
- * vim:sw=8:ts=8:si:et
- * To use the above modeline in vim you must have "set modeline" in your .vimrc
- * Author: Guido Socher 
- * Copyright: GPL V2
- *
- * Based on the net.h file from the AVRlib library by Pascal Stang.
- * For AVRlib See http://www.procyonengineering.com/
- * Used with explicit permission of Pascal Stang.
- *
- * Chip type           : ATMEGA88 with ENC28J60
- *********************************************/
+/*******************************************************************************
+* Copyright [2016] [Guido Socher (GPL V2), Shchablo Konstantin]
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an
+* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+* either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*******************************************************************************/
 
+/*******************************************************************************
+* Information.
+* Company: JINR PMTLab
+* Author: Shchablo Konstantin
+* Email: ShchabloKV@gmail.com
+* Tel: 8-906-796-76-53 (russia)
+*******************************************************************************/
 
-
-/*********************************************
- * modified: 2007-08-08
- * Author  : awake
- * Copyright: GPL V2
- * http://www.icdev.com.cn/?2213/
- * Host chip: ADUC7026
-**********************************************/
-
-
-
-
-
-// notation: _P = position of a field
-//           _V = value of a field
-
-//@{
+/*******************************************************************************
+* Based on the net.h file from the AVRlib library by Pascal Stang.
+* For AVRlib See http://www.procyonengineering.com/
+* Used with explicit permission of Pascal Stang.
+*
+* Chip type           : NIOSII with ENC28J60
+*******************************************************************************/
 
 #ifndef NET_H
 #define NET_H
@@ -56,7 +57,6 @@
 //
 #define ETH_DST_MAC 0
 #define ETH_SRC_MAC 6
-
 
 // ******* ARP *******
 #define ETH_ARP_OPCODE_REPLY_H_V 0x0
@@ -86,13 +86,11 @@
 #define IP_P 0xe
 #define IP_TOTLEN_H_P 0x10
 #define IP_TOTLEN_L_P 0x11
-
 #define IP_PROTO_P 0x17  
-
 #define IP_PROTO_ICMP_V 1
 #define IP_PROTO_TCP_V 6
-// 17=0x11
 #define IP_PROTO_UDP_V 17
+
 // ******* ICMP *******
 #define ICMP_TYPE_ECHOREPLY_V 0
 #define ICMP_TYPE_ECHOREQUEST_V 8
@@ -136,7 +134,7 @@
 #define TCP_CHECKSUM_H_P 0x32
 #define TCP_CHECKSUM_L_P 0x33
 #define TCP_OPTIONS_P 0x36
-//
+
+
 #endif
-//@}
 

@@ -48,7 +48,7 @@
    {
       datum baseAddress
       {
-         value = "6352";
+         value = "6368";
          type = "String";
       }
    }
@@ -64,7 +64,7 @@
    {
       datum baseAddress
       {
-         value = "6360";
+         value = "6376";
          type = "String";
       }
    }
@@ -81,6 +81,14 @@
       datum _sortIndex
       {
          value = "17";
+         type = "int";
+      }
+   }
+   element data32_in
+   {
+      datum _sortIndex
+      {
+         value = "18";
          type = "int";
       }
    }
@@ -202,7 +210,7 @@
    {
       datum baseAddress
       {
-         value = "6272";
+         value = "6288";
          type = "String";
       }
    }
@@ -210,7 +218,7 @@
    {
       datum baseAddress
       {
-         value = "6240";
+         value = "6256";
          type = "String";
       }
    }
@@ -218,7 +226,7 @@
    {
       datum baseAddress
       {
-         value = "6208";
+         value = "6224";
          type = "String";
       }
    }
@@ -226,7 +234,7 @@
    {
       datum baseAddress
       {
-         value = "6288";
+         value = "6304";
          type = "String";
       }
    }
@@ -247,7 +255,7 @@
    {
       datum baseAddress
       {
-         value = "6336";
+         value = "6352";
          type = "String";
       }
    }
@@ -255,7 +263,7 @@
    {
       datum baseAddress
       {
-         value = "6224";
+         value = "6240";
          type = "String";
       }
    }
@@ -263,7 +271,7 @@
    {
       datum baseAddress
       {
-         value = "6304";
+         value = "6320";
          type = "String";
       }
    }
@@ -271,7 +279,7 @@
    {
       datum baseAddress
       {
-         value = "6192";
+         value = "6208";
          type = "String";
       }
    }
@@ -279,11 +287,11 @@
    {
       datum baseAddress
       {
-         value = "6256";
+         value = "6272";
          type = "String";
       }
    }
-   element data32.s1
+   element data32_in.s1
    {
       datum baseAddress
       {
@@ -291,11 +299,19 @@
          type = "String";
       }
    }
+   element data32.s1
+   {
+      datum baseAddress
+      {
+         value = "6192";
+         type = "String";
+      }
+   }
    element LAN_NINT.s1
    {
       datum baseAddress
       {
-         value = "6320";
+         value = "6336";
          type = "String";
       }
    }
@@ -418,6 +434,11 @@
  <interface
    name="wdata32"
    internal="data32.external_connection"
+   type="conduit"
+   dir="end" />
+ <interface
+   name="rdara32"
+   internal="data32_in.external_connection"
    type="conduit"
    dir="end" />
  <module kind="clock_source" version="13.1" enabled="1" name="clk">
@@ -651,7 +672,7 @@
   <parameter name="tightlyCoupledInstructionMaster2AddrWidth" value="1" />
   <parameter name="tightlyCoupledInstructionMaster3AddrWidth" value="1" />
   <parameter name="instSlaveMapParam"><![CDATA[<address-map><slave name='epcs.epcs_control_port' start='0x0' end='0x800' /><slave name='cpu.jtag_debug_module' start='0x1000' end='0x1800' /><slave name='onchip_mem.s1' start='0x20000' end='0x2A7F8' /></address-map>]]></parameter>
-  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='epcs.epcs_control_port' start='0x0' end='0x800' /><slave name='cpu.jtag_debug_module' start='0x1000' end='0x1800' /><slave name='LAN.spi_control_port' start='0x1800' end='0x1820' /><slave name='data32.s1' start='0x1820' end='0x1830' /><slave name='pio_signals_0.s1' start='0x1830' end='0x1840' /><slave name='pio_signals.s1' start='0x1840' end='0x1850' /><slave name='pio_wdata.s1' start='0x1850' end='0x1860' /><slave name='pio_rdata.s1' start='0x1860' end='0x1870' /><slave name='pio_addr.s1' start='0x1870' end='0x1880' /><slave name='pio_count.s1' start='0x1880' end='0x1890' /><slave name='pio_time.s1' start='0x1890' end='0x18A0' /><slave name='LAN_RST.s1' start='0x18A0' end='0x18B0' /><slave name='LAN_NINT.s1' start='0x18B0' end='0x18C0' /><slave name='LAN_CS.s1' start='0x18C0' end='0x18D0' /><slave name='jtag_uart.avalon_jtag_slave' start='0x18D0' end='0x18D8' /><slave name='sysid.control_slave' start='0x18D8' end='0x18E0' /><slave name='onchip_mem.s1' start='0x20000' end='0x2A7F8' /></address-map>]]></parameter>
+  <parameter name="dataSlaveMapParam"><![CDATA[<address-map><slave name='epcs.epcs_control_port' start='0x0' end='0x800' /><slave name='cpu.jtag_debug_module' start='0x1000' end='0x1800' /><slave name='LAN.spi_control_port' start='0x1800' end='0x1820' /><slave name='data32_in.s1' start='0x1820' end='0x1830' /><slave name='data32.s1' start='0x1830' end='0x1840' /><slave name='pio_signals_0.s1' start='0x1840' end='0x1850' /><slave name='pio_signals.s1' start='0x1850' end='0x1860' /><slave name='pio_wdata.s1' start='0x1860' end='0x1870' /><slave name='pio_rdata.s1' start='0x1870' end='0x1880' /><slave name='pio_addr.s1' start='0x1880' end='0x1890' /><slave name='pio_count.s1' start='0x1890' end='0x18A0' /><slave name='pio_time.s1' start='0x18A0' end='0x18B0' /><slave name='LAN_RST.s1' start='0x18B0' end='0x18C0' /><slave name='LAN_NINT.s1' start='0x18C0' end='0x18D0' /><slave name='LAN_CS.s1' start='0x18D0' end='0x18E0' /><slave name='jtag_uart.avalon_jtag_slave' start='0x18E0' end='0x18E8' /><slave name='sysid.control_slave' start='0x18E8' end='0x18F0' /><slave name='onchip_mem.s1' start='0x20000' end='0x2A7F8' /></address-map>]]></parameter>
   <parameter name="clockFrequency" value="50000000" />
   <parameter name="deviceFamilyName" value="Cyclone III" />
   <parameter name="internalIrqMaskSystemInfo" value="7" />
@@ -796,6 +817,20 @@
   <parameter name="width" value="32" />
   <parameter name="clockRate" value="50000000" />
  </module>
+ <module kind="altera_avalon_pio" version="13.1" enabled="1" name="data32_in">
+  <parameter name="bitClearingEdgeCapReg" value="false" />
+  <parameter name="bitModifyingOutReg" value="false" />
+  <parameter name="captureEdge" value="false" />
+  <parameter name="direction" value="Output" />
+  <parameter name="edgeType" value="RISING" />
+  <parameter name="generateIRQ" value="false" />
+  <parameter name="irqType" value="LEVEL" />
+  <parameter name="resetValue" value="0" />
+  <parameter name="simDoTestBenchWiring" value="false" />
+  <parameter name="simDrivenValue" value="0" />
+  <parameter name="width" value="32" />
+  <parameter name="clockRate" value="50000000" />
+ </module>
  <connection kind="clock" version="13.1" start="clk.clk" end="cpu.clk" />
  <connection kind="clock" version="13.1" start="clk.clk" end="sysid.clk" />
  <connection
@@ -804,7 +839,7 @@
    start="cpu.data_master"
    end="sysid.control_slave">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x18d8" />
+  <parameter name="baseAddress" value="0x18e8" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection kind="clock" version="13.1" start="clk.clk" end="epcs.clk" />
@@ -836,7 +871,7 @@
    start="cpu.data_master"
    end="jtag_uart.avalon_jtag_slave">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x18d0" />
+  <parameter name="baseAddress" value="0x18e0" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection kind="interrupt" version="13.1" start="cpu.d_irq" end="jtag_uart.irq">
@@ -858,7 +893,7 @@
  <connection kind="clock" version="13.1" start="clk.clk" end="LAN_CS.clk" />
  <connection kind="avalon" version="13.1" start="cpu.data_master" end="LAN_CS.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x18c0" />
+  <parameter name="baseAddress" value="0x18d0" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection kind="clock" version="13.1" start="clk.clk" end="LAN_NINT.clk" />
@@ -868,13 +903,13 @@
    start="cpu.data_master"
    end="LAN_NINT.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x18b0" />
+  <parameter name="baseAddress" value="0x18c0" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection kind="clock" version="13.1" start="clk.clk" end="LAN_RST.clk" />
  <connection kind="avalon" version="13.1" start="cpu.data_master" end="LAN_RST.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x18a0" />
+  <parameter name="baseAddress" value="0x18b0" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection kind="clock" version="13.1" start="clk.clk" end="onchip_mem.clk1" />
@@ -987,7 +1022,7 @@
    start="cpu.data_master"
    end="pio_time.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x1890" />
+  <parameter name="baseAddress" value="0x18a0" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -996,7 +1031,7 @@
    start="cpu.data_master"
    end="pio_count.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x1880" />
+  <parameter name="baseAddress" value="0x1890" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1005,7 +1040,7 @@
    start="cpu.data_master"
    end="pio_addr.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x1870" />
+  <parameter name="baseAddress" value="0x1880" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1014,7 +1049,7 @@
    start="cpu.data_master"
    end="pio_rdata.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x1860" />
+  <parameter name="baseAddress" value="0x1870" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1023,7 +1058,7 @@
    start="cpu.data_master"
    end="pio_wdata.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x1850" />
+  <parameter name="baseAddress" value="0x1860" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1032,7 +1067,7 @@
    start="cpu.data_master"
    end="pio_signals.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x1840" />
+  <parameter name="baseAddress" value="0x1850" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection kind="clock" version="13.1" start="clk.clk" end="pio_count.clk" />
@@ -1082,16 +1117,31 @@
    start="cpu.data_master"
    end="pio_signals_0.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x1830" />
+  <parameter name="baseAddress" value="0x1840" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection kind="reset" version="13.1" start="clk.clk_reset" end="data32.reset" />
  <connection kind="avalon" version="13.1" start="cpu.data_master" end="data32.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x1820" />
+  <parameter name="baseAddress" value="0x1830" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection kind="clock" version="13.1" start="clk.clk" end="data32.clk" />
+ <connection
+   kind="reset"
+   version="13.1"
+   start="clk.clk_reset"
+   end="data32_in.reset" />
+ <connection kind="clock" version="13.1" start="clk.clk" end="data32_in.clk" />
+ <connection
+   kind="avalon"
+   version="13.1"
+   start="cpu.data_master"
+   end="data32_in.s1">
+  <parameter name="arbitrationPriority" value="1" />
+  <parameter name="baseAddress" value="0x1820" />
+  <parameter name="defaultConnection" value="false" />
+ </connection>
  <interconnectRequirement for="$system" name="qsys_mm.clockCrossingAdapter" value="HANDSHAKE" />
  <interconnectRequirement for="$system" name="qsys_mm.maxAdditionalLatency" value="0" />
 </system>

@@ -25,7 +25,6 @@
 
 module selector(
  input [7:0]addr,
- input [7:0]mosi,
  input [7:0]gate,
  input [7:0]counter,
  input [7:0]pwm,
@@ -37,17 +36,14 @@ module selector(
 always @*
 begin
   case(addr)
-   8'h00:  data = version;
-   
-	8'h02:  data = mosi;
-	8'h03:  data = mosi;
-	8'h04:  data = mosi;
-	8'h05:  data = mosi;  
+   8'h00:  data = version; 
 	
    8'h20:  data = gate;
    8'h21:  data = gate;
    8'h22:  data = gate;
    
+	8'h02:  data = dac;
+	8'h03:  data = dac;
    8'h23:  data = dac;
    8'h24:  data = dac;
    8'h25:  data = dac;

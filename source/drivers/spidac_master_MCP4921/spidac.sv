@@ -25,7 +25,7 @@
 
 module spidac
 #(
-	parameter DATA_WIDTH=8, parameter ADDR_WIDTH=3 
+	parameter DATA_WIDTH=8, parameter ADDR_WIDTH=5 
  )
 (
  input wire clk,
@@ -37,7 +37,10 @@ module spidac
  output reg SCK,
  output reg nCS,
  output reg nLDAC,
- output reg SDI
+ output reg SDI,
+ 
+ input wire start_step,
+ output reg start
 );
 
 wire clk_40Mhz;
@@ -45,21 +48,34 @@ reg [DATA_WIDTH-1:0]ram[ADDR_WIDTH-1:0];
 wire [15:0]data;
 reg load;
 assign data[7:0] = ram[1];
-assign data[11:8] = ram[2];
+assign data[15:8] = ram[2];
 integer counter_load;
+
+wire [15:0]code;
+assign code[7:0] = ram[3];
+assign code[15:8] = ram[4];
 
 always @ (posedge clk) begin 
 
+	if(nLDAC == 0) 
+		start <= 0;
+	else 
+		start <= 1;
+	
+
 // initialization
 	if(init) begin
+		code <= 0;
 		ram[0] <= 0;
 		ram[1] <= 0;
 		ram[2] <= 0;
 		load <= 0;
 		counter_load <= 0;
+		
+		start <= 0;
 	end
   
-  if(ram[0] == 8'b00000010) begin
+  if(ram[0] == 8'b00000010 || start_step) begin
 		counter_load <= 10;
 		ram[0] <= 0;
 	end
@@ -67,13 +83,16 @@ always @ (posedge clk) begin
 		load <= 1;
 		counter_load <= counter_load - 1;
 	end
-	else
+	else 
 		load <= 0;
   
   // write memory	
 	if(we) begin
 		case(addr)
-			8'h23:	ram[0] <= data_in;
+			8'h02:  ram[3] <= data_in;
+			8'h03:  ram[4] <= data_in;
+			
+			8'h23:  ram[0] <= data_in;
 			8'h24:  ram[1] <= data_in;
 			8'h25:  ram[2] <= data_in;
 		endcase
@@ -81,9 +100,11 @@ always @ (posedge clk) begin
 		
 	// read memory  			
 	case(addr)
+		8'h02: 	data_out <= ram[3];
+		8'h03:   data_out <= ram[4];
 		8'h23:	data_out <= ram[0];
-		8'h24:  data_out <= ram[1];
-		8'h25:  data_out <= ram[2];
+		8'h24:   data_out <= ram[1];
+		8'h25:   data_out <= ram[2];
 	endcase
 	
 	// Command: Reset 
