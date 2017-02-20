@@ -34,15 +34,22 @@ module counter
 	input wire we, input wire init, input wire res,
 	
 	input read_open,
+	
 	output wire [31:0]counter_time_ex,
 	output wire [31:0]data_ex,
+	
+	input wire start,
+	output wire stop,
+	
 	input wire signal
 );
 
 reg [DATA_WIDTH-1:0]ram[ADDR_WIDTH-1:0];
 reg flag;
 reg [31:0]count_time;
+reg [31:0]sec;
 reg [31:0]data;
+reg [7:0]secTime;
 
 assign counter_time_ex[7:0] = ram[6];
 assign counter_time_ex[15:8] = ram[7];
@@ -78,13 +85,16 @@ always @ (posedge clk) begin
 		count_time <= 0;
 		
 		read_close <= 0;
+		
+		stop <= 1;
+		
 	end
 	
 	// write memory	
 	if(we) begin
 		case(addr)
 			8'h26:  ram[0] <= data_in;
-			8'h27:  ram[1] <= data_in;
+			8'h27:  ram[1] <= data_in; // time
 		  
 			8'h28:  ram[2] <= data_in;
 			8'h29:  ram[3] <= data_in;
@@ -162,13 +172,39 @@ always @ (posedge clk) begin
 		ram[0] <= 0;
 	end
 	
-	if(signal == 1 && flag && ram[0] == 8'b00000000) begin
+	if(start) begin
+		ram[0] <= 8'b10000000;
+		data <= 0;
+		count_time <= 0;
+		stop <= 0;
+		secTime <= ram[1];
+	end
+		
+	if(signal == 1 && flag && ram[0] == 8'b10000000) begin
 		data <= data + 1;
 		flag <= 0;
 	end
-	if(signal == 0 && ram[0] == 8'b00000000)
+	if(signal == 0 && ram[0] == 8'b10000000)
 		flag <= 1;
-	if(ram[0] == 8'b00000000 && !flag)
-		count_time <= count_time + 1;
+		
+	if(ram[0] == 8'b10000000 && secTime > 0) begin
+		//count_time <= count_time + 1;
+		//sec <= sec + 1;
+		if(sec == 50000000) begin
+			secTime <= secTime - 1;
+			//count_time <= count_time - 1;
+			sec <= 0;
+		end
+		else begin
+			count_time <= count_time + 1;
+			sec <= sec + 1;
+		end
+	end
+	if(ram[0] == 8'b10000000 && secTime == 0) begin
+		stop <= 1;
+		sec <= 0;
+		//count_time <= count_time - 1;
+		ram[0] <= 8'b00000000;
+	end
 end
 endmodule

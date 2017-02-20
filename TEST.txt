@@ -1,0 +1,66 @@
+
+Version 0.3 - Test basic commands. All results you can cheak in the wiki (https://yadi.sk/d/_KovRU8Z3CgPTo).
+
+
+1. UDP COMMAD: \hi
+
+RESULT: hi
+
+
+2. UDP COMMAD: \addr=10&
+
+RESULT: [10]
+
+
+3. UDP COMMAD: \raddr
+
+RESULT: [10]
+
+
+4. UDP COMMAD: \help
+
+RESULT: Information:
+ 	/dac=[0-4095code]&time=[0-255sec]&step=[0-4095code]&nSteps=[0-4095]&
+	/dac=[0-4095code]&time=[0-255sec]&step=[0-4095code]&nSteps=[0-4095]&calb&
+
+5. UDP COMMAD: \freq=20&
+
+RESULT: [20]
+
+6. UDP COMMAD: \rfreq
+
+RESULT: [20]
+
+
+7. UDP COMMAD: /gate=2& (good for all numbers)
+
+RESULT: [2]
+
+8. UDP COMMAD: /rgate
+
+RESULT: [2]
+
+
+9. UDP COMMAD: \data=10&
+
+RESULT: [10]
+
+10. UDP COMMAD: \rdata
+
+RESULT: [10]
+
+11. UDP COMMAD: \interrupt
+
+RESULT: nSteps = 0, Ok, please wait a few second.
+
+12. UDP COMMAD: \dac=12&time=1&step=1&nSteps=4095&calb=1&
+
+RESULT: Ok[12]
+
+13. UDP COMMAD: \dac=12&time=1&step=1&nSteps=4095&
+
+RESULT: Ok[12, 2380950][13, 2380951][14, 2380951][15, 2380951][16, 2380950]...
+
+
+
+

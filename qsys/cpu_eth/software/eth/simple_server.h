@@ -1,9 +1,32 @@
+/*******************************************************************************
+* Copyright [2016] [Guido Socher (GPL V2), Shchablo Konstantin]
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing,
+* software distributed under the License is distributed on an
+* "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+* either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*******************************************************************************/
+
+/*******************************************************************************
+* Information.
+* Company: JINR PMTLab
+* Author: Shchablo Konstantin
+* Email: ShchabloKV@gmail.com
+* Tel: 8-906-796-76-53 (russia)
+*******************************************************************************/
 
 #include "string.h"
 #include "ip_arp_udp_tcp.h"
 #include "net.h"
 #include "stdio.h"
-
 
 #include <io.h>
 #include "../eth_bsp/system.h"
@@ -19,10 +42,6 @@ unsigned char verify_password(char* str);
 unsigned char analyse_get_url(char* str);
 unsigned int print_webpage(unsigned char* buf);
 
-//#define  SPInet_ReadWrite  SPI2_ReadWrite
-
-
-//SPI2读写一字节数据
 void SPI2_Write(unsigned char writedat);
 unsigned char SPI2_Read( );
 
@@ -33,12 +52,14 @@ unsigned char SPI2_Read( );
 #define ADDR_MASK        0x1F
 #define BANK_MASK        0x60
 #define SPRD_MASK        0x80
+
 // All-bank registers
 #define EIE              0x1B
 #define EIR              0x1C
 #define ESTAT            0x1D
 #define ECON2            0x1E
 #define ECON1            0x1F
+
 // Bank 0 registers
 #define ERDPTL           (0x00|0x00)
 #define ERDPTH           (0x01|0x00)
@@ -64,6 +85,7 @@ unsigned char SPI2_Read( );
 #define EDMADSTH         (0x15|0x00)
 #define EDMACSL          (0x16|0x00)
 #define EDMACSH          (0x17|0x00)
+
 // Bank 1 registers
 #define EHT0             (0x00|0x20)
 #define EHT1             (0x01|0x20)
@@ -89,6 +111,7 @@ unsigned char SPI2_Read( );
 #define EWOLIR           (0x17|0x20)
 #define ERXFCON          (0x18|0x20)
 #define EPKTCNT          (0x19|0x20)
+
 // Bank 2 registers
 #define MACON1           (0x00|0x40|0x80)
 #define MACON2           (0x01|0x40|0x80)
@@ -109,6 +132,7 @@ unsigned char SPI2_Read( );
 #define MIWRH            (0x17|0x40|0x80)
 #define MIRDL            (0x18|0x40|0x80)
 #define MIRDH            (0x19|0x40|0x80)
+
 // Bank 3 registers
 #define MAADR1           (0x00|0x60|0x80)
 #define MAADR0           (0x01|0x60|0x80)
@@ -126,6 +150,7 @@ unsigned char SPI2_Read( );
 #define EFLOCON          (0x17|0x60)
 #define EPAUSL           (0x18|0x60)
 #define EPAUSH           (0x19|0x60)
+
 // PHY registers
 #define PHCON1           0x00
 #define PHSTAT1          0x01
@@ -146,6 +171,7 @@ unsigned char SPI2_Read( );
 #define ERXFCON_HTEN     0x04
 #define ERXFCON_MCEN     0x02
 #define ERXFCON_BCEN     0x01
+
 // ENC28J60 EIE Register Bit Definitions
 #define EIE_INTIE        0x80
 #define EIE_PKTIE        0x40
@@ -155,6 +181,7 @@ unsigned char SPI2_Read( );
 #define EIE_WOLIE        0x04
 #define EIE_TXERIE       0x02
 #define EIE_RXERIE       0x01
+
 // ENC28J60 EIR Register Bit Definitions
 #define EIR_PKTIF        0x40
 #define EIR_DMAIF        0x20
@@ -163,17 +190,20 @@ unsigned char SPI2_Read( );
 #define EIR_WOLIF        0x04
 #define EIR_TXERIF       0x02
 #define EIR_RXERIF       0x01
+
 // ENC28J60 ESTAT Register Bit Definitions
 #define ESTAT_INT        0x80
 #define ESTAT_LATECOL    0x10
 #define ESTAT_RXBUSY     0x04
 #define ESTAT_TXABRT     0x02
 #define ESTAT_CLKRDY     0x01
+
 // ENC28J60 ECON2 Register Bit Definitions
 #define ECON2_AUTOINC    0x80
 #define ECON2_PKTDEC     0x40
 #define ECON2_PWRSV      0x20
 #define ECON2_VRPS       0x08
+
 // ENC28J60 ECON1 Register Bit Definitions
 #define ECON1_TXRST      0x80
 #define ECON1_RXRST      0x40
@@ -183,12 +213,14 @@ unsigned char SPI2_Read( );
 #define ECON1_RXEN       0x04
 #define ECON1_BSEL1      0x02
 #define ECON1_BSEL0      0x01
+
 // ENC28J60 MACON1 Register Bit Definitions
 #define MACON1_LOOPBK    0x10
 #define MACON1_TXPAUS    0x08
 #define MACON1_RXPAUS    0x04
 #define MACON1_PASSALL   0x02
 #define MACON1_MARXEN    0x01
+
 // ENC28J60 MACON2 Register Bit Definitions
 #define MACON2_MARST     0x80
 #define MACON2_RNDRST    0x40
@@ -196,6 +228,7 @@ unsigned char SPI2_Read( );
 #define MACON2_RFUNRST   0x04
 #define MACON2_MATXRST   0x02
 #define MACON2_TFUNRST   0x01
+
 // ENC28J60 MACON3 Register Bit Definitions
 #define MACON3_PADCFG2   0x80
 #define MACON3_PADCFG1   0x40
@@ -205,23 +238,28 @@ unsigned char SPI2_Read( );
 #define MACON3_HFRMLEN   0x04
 #define MACON3_FRMLNEN   0x02
 #define MACON3_FULDPX    0x01
+
 // ENC28J60 MICMD Register Bit Definitions
 #define MICMD_MIISCAN    0x02
 #define MICMD_MIIRD      0x01
+
 // ENC28J60 MISTAT Register Bit Definitions
 #define MISTAT_NVALID    0x04
 #define MISTAT_SCAN      0x02
 #define MISTAT_BUSY      0x01
+
 // ENC28J60 PHY PHCON1 Register Bit Definitions
 #define PHCON1_PRST      0x8000
 #define PHCON1_PLOOPBK   0x4000
 #define PHCON1_PPWRSV    0x0800
 #define PHCON1_PDPXMD    0x0100
+
 // ENC28J60 PHY PHSTAT1 Register Bit Definitions
 #define PHSTAT1_PFDPX    0x1000
 #define PHSTAT1_PHDPX    0x0800
 #define PHSTAT1_LLSTAT   0x0004
 #define PHSTAT1_JBSTAT   0x0002
+
 // ENC28J60 PHY PHCON2 Register Bit Definitions
 #define PHCON2_FRCLINK   0x4000
 #define PHCON2_TXDIS     0x2000
@@ -255,18 +293,8 @@ unsigned char SPI2_Read( );
 #define TXSTART_INIT     (0x1FFF-0x0600)
 // stp TX buffer at end of mem
 #define TXSTOP_INIT      0x1FFF
-//
 // max frame length which the conroller will accept:
 #define        MAX_FRAMELEN        1500        // (note: maximum ethernet frame length would be 1518)
-//#define MAX_FRAMELEN     600
-
-
-//#define   ENC28J60_CSL()    (GPIOA->ODR &= ~(1<<4))//GPIOA->BRR = ENC28J60_CS;
-//#define   ENC28J60_CSH()    (GPIOA->ODR |= 1<<4)//GPIOA->BSRR = ENC28J60_CS;
-//
-//#define   ENC28J60_RSTL()   (GPIOA->ODR &= ~(1<<8))
-//#define   ENC28J60_RSTH()   (GPIOA->ODR |= 1<<8)
-
 
 #define  ENC28J60_CSL()    IOWR_ALTERA_AVALON_PIO_DATA(LAN_CS_BASE, 0)
 #define  ENC28J60_CSH()    IOWR_ALTERA_AVALON_PIO_DATA(LAN_CS_BASE, 1)
@@ -274,7 +302,7 @@ unsigned char SPI2_Read( );
 #define   ENC28J60_RSTL()   IOWR_ALTERA_AVALON_PIO_DATA(LAN_RST_BASE, 0)
 #define   ENC28J60_RSTH()   IOWR_ALTERA_AVALON_PIO_DATA(LAN_RST_BASE, 1)
 
-//SPI1初始化
+//SPI
 void enc28j60Init(unsigned char * macaddr);
 unsigned char enc28j60ReadOp(unsigned char op, unsigned char address);
 void enc28j60WriteOp(unsigned char op, unsigned char address, unsigned char data);
@@ -288,8 +316,3 @@ void enc28j60clkout(unsigned char clk);
 unsigned char enc28j60getrev(void);
 void enc28j60PacketSend(unsigned int len, unsigned char* packet);
 alt_u16 enc28j60PacketReceive(alt_u16 maxlen, unsigned char* packet);
-
-
-//SPI1读写一字节数据
-//INT8U  ENC28J60_ReadWrite(INT8U writedat);
-

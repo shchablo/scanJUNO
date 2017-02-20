@@ -920,10 +920,8 @@ int simple_server()
 
            readDAC(&dacInt, &addrChar);
 
-           if(calibration == 1 & count > 0) {
+           if(count > 0 && calibration == 1) {
                calibrationInt = dacInt;
-               dac1 =  dacInt;
-               dac2 =  dacInt >> 8;
                // write dac code
                IOWR_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE, 0x02);
                IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x01); // write addr signal
@@ -945,10 +943,15 @@ int simple_server()
                IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
                for(i = 0; i < delay; i++);
 
+               IOWR_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE, addrChar);
+               IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x01); // write addr signal
+               IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
+
                nSteps = 0;
+               waitRun = 0;
                calibration = 0;
 
-               sprintf(result_array,"[%d]", calibration);
+               sprintf(result_array,"[%d]", calibrationInt);
 
                for(i = 0; i < 1500; i++)
                    buf[i] = bufUDP[i];
@@ -1265,21 +1268,29 @@ int simple_server()
                      goto ANSWER;
                    }
                    if(strncmp("help", (char *) &(buf[i]), 4) == 0) {
-                     strcpy(str, "Information:");
+                     strcpy(str, "Information: '\n' "
+                                 "/dac=[0-4095code]&time=[0-255sec]&step=[0-4095code]&nSteps=[0-4095]& '\n'"
+                                 "/dac=[0-4095code]&time=[0-255sec]&step=[0-4095code]&nSteps=[0-4095]&calb&");
                      goto ANSWER;
                    }
                    if(strncmp("interrupt", (char *) &(buf[i]), 9) == 0) {
                       nSteps = 0;
-                      strcpy(str, "nSteps = 0;");
+                      strcpy(str, "nSteps = 0, Ok, please wait a few second.");
                       goto ANSWER;
                    }
-
                    if((strncmp("addr=", (char *) &(buf[i]), 5) == 0)) {	// parsing addr
                        pars(i, value);
                        // send value of addr to the board
                        sendAddr(&addrChar, &addrInt, value);
                        sprintf(str, "[%d]", addrInt);
                       goto ANSWER;
+                   }
+                   if((strncmp("raddr", (char *) &(buf[i]), 5) == 0)) {	// parsing addr
+                        addrChar = IORD_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE);
+                        addrInt = (int)addrChar;
+                        sprintf(addrArray,"%d", addrInt);
+                        sprintf(str, "[%d]", addrInt);
+                        goto ANSWER;
                    }
                    // parsing data post requst
                    if((strncmp("data=", (char *) &(buf[i]), 5) == 0)) {	// parsing data
@@ -1295,7 +1306,6 @@ int simple_server()
                        sprintf(str, "[%d]", (int)rdata);
                        goto ANSWER;
                    }
-
                    // parsing freq post requst
                    if((strncmp("freq=", (char *) &(buf[i]), 5) == 0)) {	// parsing freq
                        pars(i, value);
@@ -1309,7 +1319,6 @@ int simple_server()
                        sprintf(str, "[%d]", freqInt);
                        goto ANSWER;
                    }
-
                    // parsing data post requst
                    if((strncmp("gate=", (char *) &(buf[i]), 5) == 0)) {	// parsing data
                        pars(i, value);
@@ -1323,9 +1332,6 @@ int simple_server()
                        sprintf(str, "[%d]", gateInt);
                        goto ANSWER;
                    }
-
-
-
                    if((strncmp("dac=", (char *) &(buf[i]), 4) == 0)) {	// parsing dac data
                        if(!waitRun) {
                            parsRun(i, &dacInt, &dac1, &dac2, &cTime, &cTimeChar, &step, &nSteps, &calibration);
