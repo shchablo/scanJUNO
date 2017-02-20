@@ -83,7 +83,6 @@ Commands:
 	
 	Example: "/dac=[0]&time=[1]&step=[1]&nSteps=[4095]&calb=1&"
 
-
 5. "\freq=[0-2^32code]&" - ANSWER "[value]"
 
 6. "\rfreq" - ANSWER "[value]"
@@ -109,14 +108,5 @@ Support:
   Information about the project (wiki): https://yadi.sk/d/_KovRU8Z3CgPTo (Download and run in browser) - Russian language. 
 
   ShchabloKV@gmail.com (8-906-796-76-53)
---------------------------------------------------------------------------------
 
---------------------------------------------------------------------------------
-
-Support:
-
-  Information about the project: https://yadi.sk/d/_KovRU8Z3CgPTo (Download and run in browser) - Russia. 
-
-  ShchabloKV@gmail.com (8-906-796-76-53)
---------------------------------------------------------------------------------
 
