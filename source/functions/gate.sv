@@ -110,36 +110,52 @@ always @ (posedge clk) begin
 		leds <= 10'b0000000000;
 	endcase
 	
-		case(out)
-		4'd0:  gen_out <= gen_in;
-		4'd1:  gen_out <= gen_in;
-		4'd2:  gen_out <= gen_in;
-		4'd3:  gen_out <= gen_in;
-		4'd4:  gen_out <= gen_in;
-		4'd5:  gen_out <= gen_in;
-		4'd6:  gen_out <= gen_in;
-		4'd7:  gen_out <= gen_in;
-		4'd8:  gen_out <= gen_in;
-		4'd9:  gen_out <= gen_in;
-		4'd10: gen_out <= gen_in;
-		default:
-		gen_out <= gen_in;
-	endcase
-		case(out)
-		4'd0:  ch_pwm_out <= 0;
-		4'd1:  ch_pwm_out[0] <= gen_in;
-		4'd2:  ch_pwm_out[1] <= gen_in;
-		4'd3:  ch_pwm_out[2] <= gen_in;
-		4'd4:  ch_pwm_out[3] <= gen_in;
-		4'd5:  ch_pwm_out[4] <= gen_in;
-		4'd6:  ch_pwm_out[5] <= gen_in;
-		4'd7:  ch_pwm_out[6] <= gen_in;
-		4'd8:  ch_pwm_out[7] <= gen_in;
-		4'd9:  ch_pwm_out[8] <= gen_in;
-		4'd10: ch_pwm_out[9] <= gen_in;
-	default:
-		ch_pwm_out <= 0;
-	endcase
+		if(out == 4'd0) begin
+			ch_pwm_out[0] = 0;
+			gen_out = 0;
+		end
+		if(out == 4'd1) begin
+			ch_pwm_out[0] = gen_in;
+			gen_out = gen_in;
+		end
+		if(out == 4'd2) begin
+			ch_pwm_out[1] = gen_in;
+			gen_out = gen_in;
+		end
+		if(out == 4'd3) begin
+			ch_pwm_out[2] = gen_in;
+			gen_out = gen_in;
+		end
+		if(out == 4'd4) begin
+			ch_pwm_out[3] = gen_in;
+			gen_out = gen_in;
+		end
+		if(out == 4'd5) begin
+			ch_pwm_out[4] = gen_in;
+			gen_out = gen_in;
+		end
+		if(out == 4'd6) begin
+			ch_pwm_out[5] = gen_in;
+			gen_out = gen_in;
+		end
+		if(out == 4'd7) begin
+			ch_pwm_out[6] = gen_in;
+			gen_out = gen_in;
+		end
+		if(out == 4'd8) begin
+			ch_pwm_out[7] = gen_in;
+			gen_out = gen_in;
+		end
+		if(out == 4'd9) begin
+			ch_pwm_out[8] = gen_in;
+			gen_out = gen_in;
+		end
+		if(out == 4'd10) begin
+			ch_pwm_out[9] = gen_in;
+			gen_out = gen_in;
+		end
+		
+		
 	
 	// Command: Reset 
 	if(ram[0] == 8'b00000001 || res) begin

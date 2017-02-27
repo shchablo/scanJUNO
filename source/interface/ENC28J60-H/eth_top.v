@@ -29,7 +29,8 @@ module eth_top(
 		input wire 		 	 stopStep_export,
 		
 		output wire  		  swrite32_export,
-		output wire [31:0]  wdata32_export	
+		output wire [31:0]  wdata32_export,
+		input  wire [31:0]  rdata32_export  	
 	);
 
 wire  SS_n_from_the_LAN;

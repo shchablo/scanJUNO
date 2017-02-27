@@ -40,12 +40,18 @@ module spidac
  output reg SDI,
  
  input wire start_step,
- output reg start
+ output reg start,
+ 
+ input wire s_ready_counter_start,
+ 
+ output reg run
 );
 
 wire clk_40Mhz;
 reg [DATA_WIDTH-1:0]ram[ADDR_WIDTH-1:0];
+
 wire [15:0]data;
+
 reg load;
 assign data[7:0] = ram[1];
 assign data[15:8] = ram[2];
@@ -55,36 +61,79 @@ wire [15:0]code;
 assign code[7:0] = ram[3];
 assign code[15:8] = ram[4];
 
-always @ (posedge clk) begin 
+wire wRun;
+//reg run;
+assign wRun = run;
+reg s_ready_write_dac;
+reg switch_start_step;
+always @ (start_step or s_ready_write_dac or init) begin 
+	if(init) begin
+		switch_start_step <= 1;
+		run <= 0;
+	end	
+	if(start_step == 0)
+		switch_start_step <= 1;
 
-	if(nLDAC == 0) 
-		start <= 0;
-	else 
-		start <= 1;
-	
+	if(start_step == 1 && s_ready_write_dac == 1) begin
+		if(switch_start_step == 1) begin
+			run <= 1;
+			switch_start_step <= 0;
+		end
+	end
+	else
+		run <= 0;
+end
+
+reg switch_nLDAC;
+always @ (nLDAC or s_ready_counter_start or init) begin 
+	if(init) begin
+		switch_nLDAC = 1;
+		start = 0;
+	end	
+	if(nLDAC == 1)
+		switch_nLDAC = 1;
+
+	if(nLDAC == 0 && s_ready_counter_start == 1) begin
+		if(switch_nLDAC == 1) begin
+			start = 1;
+			switch_nLDAC = 0;
+		end
+	end
+	else
+		start = 0;
+end
+
+always @ (posedge clk) begin 
 
 // initialization
 	if(init) begin
+	   s_ready_write_dac <= 1;
 		code <= 0;
-		ram[0] <= 0;
+		ram[0] <= 8'b00000000;
 		ram[1] <= 0;
 		ram[2] <= 0;
 		load <= 0;
 		counter_load <= 0;
-		
-		start <= 0;
+	end
+	
+  if(wRun) begin
+		ram[0] <= 8'b00000010;
+		s_ready_write_dac <= 0;
 	end
   
-  if(ram[0] == 8'b00000010 || start_step) begin
-		counter_load <= 10;
-		ram[0] <= 0;
+  if(ram[0] == 8'b0000010) begin
+		counter_load <= 2;
+		ram[0] <= 8'b00000100;
 	end
-	if(counter_load != 0) begin
+	if(counter_load > 0 && ram[0] == 8'b00000100) begin
 		load <= 1;
 		counter_load <= counter_load - 1;
 	end
-	else 
+	if(counter_load == 0 && ram[0] == 8'b00000100) begin
 		load <= 0;
+		s_ready_write_dac <= 1;
+		ram[0] <= 8'b00000000;
+	end
   
   // write memory	
 	if(we) begin
@@ -126,7 +175,7 @@ altpll_m4_d5 altpll_m4_d5_inst
 SPIDAC_MASTER_MCP4921 SPIDAC_MASTER_MCP4921_inst
 	(
 		clk_40Mhz,
-		data,
+		data[11:0],
 		load,
 		
 		SCK, 

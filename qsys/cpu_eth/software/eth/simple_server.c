@@ -28,8 +28,8 @@
 #define PSTR(s) s
 
 static unsigned char mymac[6] = { 0x54, 0x55, 0x58, 0x10, 0x00, 0x24 }; // mac
-static unsigned char myip[4] = { 192, 168, 1, 4 }; // ip
-static char baseurl[] = "http://192.168.1.4/"; // a DNS server (baseurl must end in "/"):
+static unsigned char myip[4] = { 159, 93, 74, 142 }; // ip
+static char baseurl[] = "http://159.93.74.142/"; // a DNS server (baseurl must end in "/"):
 static unsigned int mywwwport = 80; // listen port for tcp/www (max range 1-254)
 static unsigned int myudpport = 1200; // listen port for udp
 
@@ -367,6 +367,8 @@ void sendRun(unsigned char dac1, unsigned char dac2,
     IOWR_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE, *addrChar);
     IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x01); // write addr signal
     IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
+    for(i = 0; i < delay; i++);
+
 }
 
 void readDAC(int *dacInt, unsigned char *addrChar)
@@ -469,6 +471,7 @@ void parsRun(unsigned int ii,
              int *cTime, unsigned char *cTimeChar,
              int *step, int *nSteps, unsigned char *calibration)
 {
+    int dacTmp = 0;
     unsigned char valuelong[32] = {0};
     unsigned int i, j, k, n, r, z;
     i = ii;
@@ -476,8 +479,9 @@ void parsRun(unsigned int ii,
             if((strncmp("&", (char *) &(buf[i+4+j]), 1) == 0)) {
                 memcpy(valuelong, (unsigned char *) &(buf[i+4]), j+1);
                 *dacInt = atoi(valuelong);
-                *dac1 =  *dacInt;
-                *dac2 =  *dacInt >> 8;
+                dacTmp = atoi(valuelong);
+                *dac1 =  dacTmp;
+                *dac2 =  dacTmp >> 8;
                 break;
             }
         }
@@ -615,71 +619,71 @@ void basic_css(unsigned int *len)
 void amf(unsigned int *len)
 {
     *len = fill_tcp_data_p(buf, 0, PSTR("HTTP/1.0 200 OK\r\nContent-Type:application/javascript\r\n\r\n"));
-    *len = fill_tcp_data_p(buf, *len, PSTR("$( '#a' ).load( 'http://192.168.1.4/addr.html #main' );"
-                                           "$( '#m' ).load( 'http://192.168.1.4/memo.html #main' );"
+    *len = fill_tcp_data_p(buf, *len, PSTR("$( '#a' ).load( 'http://159.93.74.142/addr.html #main' );"
+                                           "$( '#m' ).load( 'http://159.93.74.142/memo.html #main' );"
 
         "$('#aM').on('submit', '#idAddr', function(event) {"
             "event.preventDefault();"
             "console.log( $( this ).serialize() );"
             "var param = $( this ).serialize();"
-            "$.post('http://192.168.1.4/', param  );"
-            "$( '#a' ).load( 'http://192.168.1.4/addr.html #main' );"
-            "$( '#m' ).load( 'http://192.168.1.4/memo.html #main' );"
+            "$.post('http://159.93.74.142/', param  );"
+            "$( '#a' ).load( 'http://159.93.74.142/addr.html #main' );"
+            "$( '#m' ).load( 'http://159.93.74.142/memo.html #main' );"
         "});"
 
         "$('#aM').on('submit', '#idMemo', function(event) {"
             "event.preventDefault();"
             "console.log( $( this ).serialize() );"
             "var param = $( this ).serialize();"
-            "$.post('http://192.168.1.4/', param  );"
-            "$( '#m' ).load( 'http://192.168.1.4/memo.html #main' );"
-            "$( '#g' ).load( 'http://192.168.1.4/gate.html #main' );"
-            "$( '#f' ).load( 'http://192.168.1.4/freq.html #main' );"
-            "$( '#r' ).load( 'http://192.168.1.4/R1.html #main' );"
+            "$.post('http://159.93.74.142/', param  );"
+            "$( '#m' ).load( 'http://159.93.74.142/memo.html #main' );"
+            "$( '#g' ).load( 'http://159.93.74.142/gate.html #main' );"
+            "$( '#f' ).load( 'http://159.93.74.142/freq.html #main' );"
+            "$( '#r' ).load( 'http://159.93.74.142/R1.html #main' );"
         "});"));
 }
 
 void fg(unsigned int *len)
 {
     *len = fill_tcp_data_p(buf, 0, PSTR("HTTP/1.0 200 OK\r\nContent-Type:application/javascript\r\n\r\n"));
-    *len = fill_tcp_data_p(buf, *len, PSTR("$( '#f' ).load( 'http://192.168.1.4/freq.html #main' );"
-                                           "$( '#g' ).load( 'http://192.168.1.4/gate.html #main' );"
+    *len = fill_tcp_data_p(buf, *len, PSTR("$( '#f' ).load( 'http://159.93.74.142/freq.html #main' );"
+                                           "$( '#g' ).load( 'http://159.93.74.142/gate.html #main' );"
         "$('#fG').on('submit', '#idFreq', function(event) {"
             "event.preventDefault();"
             "console.log( $( this ).serialize() );"
             "var param = $( this ).serialize();"
-            "$.post('http://192.168.1.4/', param  );"
-            "$( '#f' ).load( 'http://192.168.1.4/freq.html #main' );"
+            "$.post('http://159.93.74.142/', param  );"
+            "$( '#f' ).load( 'http://159.93.74.142/freq.html #main' );"
         "});"
 
         "$('#fG').on('submit', '#idGate', function(event) {"
             "event.preventDefault();"
             "console.log( $( this ).serialize() );"
             "var param = $( this ).serialize();"
-            "$.post('http://192.168.1.4/', param  );"
-            "$( '#g' ).load( 'http://192.168.1.4/gate.html #main' );"
+            "$.post('http://159.93.74.142/', param  );"
+            "$( '#g' ).load( 'http://159.93.74.142/gate.html #main' );"
         "});"));
 }
 
 void r1(unsigned int *len)
 {
     *len = fill_tcp_data_p(buf, 0, PSTR("HTTP/1.0 200 OK\r\nContent-Type:application/javascript\r\n\r\n"));
-    *len = fill_tcp_data_p(buf, *len, PSTR("$( '#r' ).load( 'http://192.168.1.4/R1.html #main' );"
-                                           "$( '#cM' ).load( 'http://192.168.1.4/counter.html' );"
+    *len = fill_tcp_data_p(buf, *len, PSTR("$( '#r' ).load( 'http://159.93.74.142/R1.html #main' );"
+                                           "$( '#cM' ).load( 'http://159.93.74.142/counter.html' );"
     "$('#r1f').on('submit', '#idDacTR1', function(event) {"
         "event.preventDefault();"
         "console.log( $( this ).serialize() );"
         "var param = $( this ).serialize();"
-        "$.post('http://192.168.1.4/', param  );"
-        "$( '#r' ).load( 'http://192.168.1.4/R1.html #main' );"
-        "$( '#cM' ).load( 'http://192.168.1.4/counter.html' );"
+        "$.post('http://159.93.74.142/', param  );"
+        "$( '#r' ).load( 'http://159.93.74.142/R1.html #main' );"
+        "$( '#cM' ).load( 'http://159.93.74.142/counter.html' );"
     "});"
     "$('#r1f').on('submit', '#idInterrupt', function(event) {"
        "event.preventDefault();"
        "console.log( $( this ).serialize() );"
        "var param = $( this ).serialize();"
-       "$.post('http://192.168.1.4/', param  );"
-       "$( '#r' ).load( 'http://192.168.1.4/R1.html #main' );"
+       "$.post('http://159.93.74.142/', param  );"
+       "$( '#r' ).load( 'http://159.93.74.142/R1.html #main' );"
     "});"));
 }
 
@@ -692,7 +696,7 @@ void chart(unsigned int *len, int time)
     "var startTime = new Date().getTime();"
     "function requestData() {"
         "$.ajax({"
-            "url: 'http://192.168.1.4/live-data',"
+            "url: 'http://159.93.74.142/live-data',"
             "success: function(point) {"
                 "var series = chart.series[0],"
                 "shift = series.data.length > 4096;"
@@ -762,7 +766,7 @@ void main_page(unsigned int *len)
     *len = fill_tcp_data_p(buf, 0, PSTR("HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\n"));
     *len = fill_tcp_data_p(buf, *len, PSTR(""
         "<head>"
-            "<link rel='stylesheet' href='http://192.168.1.4/bs.css' type='text/css' />"
+            "<link rel='stylesheet' href='http://159.93.74.142/bs.css' type='text/css' />"
             "<script type='text/javascript'></script>"
             "<script type='text/javascript' src='http://code.jquery.com/jquery-2.2.4.js'></script>"
             "<script type='text/javascript' src='http://code.highcharts.com/highcharts.js'></script>"
@@ -790,13 +794,13 @@ void main_page(unsigned int *len)
                 "</div>"
             "</div>"
             "<script>"
-            "$('#aM').load('http://192.168.1.4/aM.html');"
-            "$('#fG').load('http://192.168.1.4/fG.html');"
-            "$('#r1f').load('http://192.168.1.4/R.html');"
+            "$('#aM').load('http://159.93.74.142/aM.html');"
+            "$('#fG').load('http://159.93.74.142/fG.html');"
+            "$('#r1f').load('http://159.93.74.142/R.html');"
             "</script>"
-            "<script type='text/javascript' src='http://192.168.1.4/amf.js'></script>"
-            "<script type='text/javascript' src='http://192.168.1.4/fg.js'></script>"
-            "<script type='text/javascript' src='http://192.168.1.4/r1.js'></script>"
+            "<script type='text/javascript' src='http://159.93.74.142/amf.js'></script>"
+            "<script type='text/javascript' src='http://159.93.74.142/fg.js'></script>"
+            "<script type='text/javascript' src='http://159.93.74.142/r1.js'></script>"
         "</body>"));
 }
 
@@ -869,6 +873,7 @@ int simple_server()
 
     // dac
     int dacInt = 0;
+    int dacTmp = 0;
     unsigned char dac1 = 0;
     unsigned char dac2 = 0;
     unsigned char calibration = 0;
@@ -909,16 +914,18 @@ int simple_server()
 
        // RUN READ AND WAIT
        if(waitRun == 1 & (IORD_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_0_BASE) == 0x10)) {
+
+
            readLiveData = 1;
-            IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x02); // read counter signal
-            IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
+           IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x02); // read counter signal
+           IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
 
            // read count
            count = 0; count = IORD_ALTERA_AVALON_PIO_DATA(PIO_COUNT_BASE);
            // read time (sec)
            time = 0; time = IORD_ALTERA_AVALON_PIO_DATA(PIO_TIME_BASE);
 
-           readDAC(&dacInt, &addrChar);
+         //  readDAC(&dacInt, &addrChar);
 
            if(count > 0 && calibration == 1) {
                calibrationInt = dacInt;
@@ -943,9 +950,9 @@ int simple_server()
                IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
                for(i = 0; i < delay; i++);
 
-               IOWR_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE, addrChar);
-               IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x01); // write addr signal
-               IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
+              // IOWR_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE, addrChar);
+              // IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x01); // write addr signal
+              // IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
 
                nSteps = 0;
                waitRun = 0;
@@ -958,7 +965,8 @@ int simple_server()
                make_udp_reply_from_request(buf, result_array, strlen(result_array), myudpport);
            }
            else {
-               sprintf(result_array,"[%d, %d]", dacInt, count);
+                 sprintf(result_array,"[%u, %u]", time, count);
+              // sprintf(result_array,"[%d, %u]", dacInt, count);
 
                for(i = 0; i < 1500; i++)
                    buf[i] = bufUDP[i];
@@ -969,10 +977,21 @@ int simple_server()
                    waitRun = 1;
 
                    dacInt = dacInt + step;
-                   dac1 =  dacInt;
-                   dac2 =  dacInt >> 8;
-
+                   dacTmp = dacInt;
+                   dac1 =  dacTmp;
+                   dac2 =  dacTmp >> 8;
+                   dacTmp = 0;
                    sendRun(dac1, dac2, cTimeChar,  &addrChar);
+
+                 //  IOWR_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE, 0x23);
+                 //  IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x01); // write addr signal
+                 //  IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
+                 //  for(i = 0; i < delay; i++);
+
+                 //  IOWR_ALTERA_AVALON_PIO_DATA(PIO_WDATA_BASE, 0x02);
+                 //  IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x08); // write data signal
+                 //  IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
+
                    IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x10);
                    IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
                }
@@ -1084,8 +1103,18 @@ int simple_server()
                                     parsRun(i, &dacInt, &dac1, &dac2, &cTime, &cTimeChar, &step, &nSteps, &calibration);
                                     waitRun = 1;
                                     sendRun(dac1, dac2, cTimeChar,  &addrChar);
-                                    IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x10);
-                                    IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
+
+                                  //  IOWR_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE, 0x23);
+                                  //  IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x01); // write addr signal
+                                  //  IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
+                                  //  for(i = 0; i < delay; i++);
+
+                                  //  IOWR_ALTERA_AVALON_PIO_DATA(PIO_WDATA_BASE, 0x02);
+                                  // IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x08); // write data signal
+                                  //  IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
+
+                                   IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x10);
+                                   IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
                                     plen = fill_tcp_data_p(buf, 0, PSTR("HTTP/1.0 200 OK"));
                                 }
                                 else {
@@ -1120,7 +1149,7 @@ int simple_server()
             // chart page
             if(strncmp("/counter.html", (char *) &(buf[dat_p + 4]), 13) == 0) {
                 plen = fill_tcp_data_p(buf, 0, PSTR("HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\n"));
-                plen = fill_tcp_data_p(buf, plen, PSTR("<script type='text/javascript' src='http://192.168.1.4/counter.js'> </script>"));
+                plen = fill_tcp_data_p(buf, plen, PSTR("<script type='text/javascript' src='http://159.93.74.142/counter.js'> </script>"));
                 plen = fill_tcp_data_p(buf, plen, PSTR("<div id='chart'></div>"));
                 goto SENDTCP;
             }

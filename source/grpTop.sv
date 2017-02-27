@@ -51,7 +51,12 @@ module grpTop(
 	output pwm_out,
 	output [9:0]ch_pwm_out,
 	
-	input count
+	input count,
+	
+	output test,
+	output test2,
+	output test3
+	
   );
 // Instantiation initializer. Signals and registers declared.
 wire init;
@@ -94,6 +99,7 @@ wire        startStep_export;
 wire        stopStep_export;
 wire        swrite32_export;
 wire [31:0] wdata32_export;
+wire [31:0] rdata32_export;
 
 eth_top eth_inst (
 	key_restart,                   //             clk_clk_in_reset.reset_n
@@ -121,7 +127,8 @@ eth_top eth_inst (
 	stopStep_export,
 	
 	swrite32_export,
-	wdata32_export
+	wdata32_export,
+	rdata32_export
 
 );
 // Instantiation command. Signals and registers declared.
@@ -166,11 +173,12 @@ pwm pwm_inst(
 	swrite32_export,
    wdata32_export,
 	
-	pwm_test // gen - should be
+	gen // gen - should be
 );
 // Instantiation counter. Signals and registers declared.
 wire [7:0]data_counter;
 wire start_dac;
+wire s_ready_counter_start;
 counter counter_inst
  (
 	clock50Mhz,
@@ -182,10 +190,11 @@ counter counter_inst
 	time_export,
 	signals_export,
 	
-	start_dac,
+	start_dac, //start_dac,
+	s_ready_counter_start,
 	stopStep_export,
 	
-	pwm_test //count - should be
+	pwm_test //count - should be or gen
 );
 
 // Instantiation gate. Signals and registers declared.
@@ -202,7 +211,7 @@ gate gate_inst(
   
   gen,
   ch_pwm_out,
-  pwm_out
+  pwm_test // pwm_out
   );
 // Instantiation DAC. Signals and registers declared.
 wire [7:0]data_DAC;
@@ -220,7 +229,10 @@ wire [7:0]data_DAC;
  SDI,
  
  startStep_export,
- start_dac
+ start_dac,
+ s_ready_counter_start,
+ 
+ test2
 );
 // Instantiation addr_indicators. Signals and registers declared.
 indicator16 indicator16_hex0(
@@ -234,6 +246,8 @@ indicator16 indicator16_hex1(
 	assign address_hex3[7:0] = 8'b11000000;
 	//assign address_hex3[7] = addr_write_export;
 	assign address_hex2[7:0] = 8'b00001001;
+	assign test = SDI;
+	assign test3 = stopStep_export;
 
 reg [7:0]version;
 assign version[7:0] = 8'b00010000;

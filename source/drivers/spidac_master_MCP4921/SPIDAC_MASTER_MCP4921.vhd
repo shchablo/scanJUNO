@@ -81,7 +81,7 @@ begin
 				WHEN INITIALIZATION =>
 					bit_ix := 16;
 					nCS <= '1';
-					nLDAC <= '0';
+					nLDAC <= '1';
 					SDI_iv <= '0';
 					request <= '0';
 					state <= IDLE;
@@ -89,7 +89,7 @@ begin
 				WHEN IDLE =>
 					bit_ix := 16;
 					nCS <= '1';
-					nLDAC <= '0';
+					nLDAC <= '1';
 					SDI_iv <= '0';
 					if data /= prev_data then
 						state <= REQUEST_DATA;
@@ -112,6 +112,7 @@ begin
 						
 				when INDEX_DECREMENT =>
 						if(bit_ix = 0) then
+							nLDAC <= '0';
 							state <= IDLE;
 						else
 							bit_ix := bit_ix - 1;
