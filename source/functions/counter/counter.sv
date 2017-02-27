@@ -31,7 +31,7 @@ module counter
 	input wire clk,
 	input wire [DATA_WIDTH-1:0]addr,
 	input wire [DATA_WIDTH-1:0]data_in, output wire [DATA_WIDTH-1:0]data_out,
-	input wire we, input wire init, input wire res,
+	input wire we, input wire initialization, input wire res,
 	
 	input read_open,
 	
@@ -39,10 +39,15 @@ module counter
 	output wire [31:0]data_ex,
 	
 	input wire start,
+	output reg s_ready_counter_start,
 	output wire stop,
 	
 	input wire signal
 );
+
+(* syn_encoding = "safe" *) reg [3:0] state; 
+
+parameter init = 0, idle = 1, write = 2, counter = 3, end_counter = 4;
 
 reg [DATA_WIDTH-1:0]ram[ADDR_WIDTH-1:0];
 reg flag;
@@ -60,151 +65,131 @@ assign data_ex[7:0] = ram[2];
 assign data_ex[15:8] = ram[3];
 assign data_ex[23:16] = ram[4];
 assign data_ex[31:24] = ram[5];
-
-reg read_close;
-
+	
 always @ (posedge clk) begin 
-	
-	// initialization
-	if(init) begin
-		ram[0] <= 0;
-		ram[1] <= 0;
+	case(state)
+		init: begin
+			ram[0] <= 0;
+			ram[1] <= 0;
 		
-		ram[2] <= 0;
-		ram[3] <= 0;
-		ram[4] <= 0;
-		ram[5] <= 0;
+			ram[2] <= 0;
+			ram[3] <= 0;
+			ram[4] <= 0;
+			ram[5] <= 0;
 		
-		ram[6] <= 0;
-		ram[7] <= 0;
-		ram[8] <= 0;
-		ram[9] <= 0;
+			ram[6] <= 0;
+			ram[7] <= 0;
+			ram[8] <= 0;
+			ram[9] <= 0;
+			
+			flag = 0;
+			data <= 0;
+			count_time <= 0;
+			
+			s_ready_counter_start <= 1;
+					
+			stop <= 0;
+			
+			state <= idle;
+		end
 		
-		flag <= 0;
-		data <= 0;
-		count_time <= 0;
-		
-		read_close <= 0;
-		
-		stop <= 1;
-		
-	end
-	
-	// write memory	
-	if(we) begin
-		case(addr)
-			8'h26:  ram[0] <= data_in;
-			8'h27:  ram[1] <= data_in; // time
-		  
-			8'h28:  ram[2] <= data_in;
-			8'h29:  ram[3] <= data_in;
-			8'h30:  ram[4] <= data_in;
-			8'h31:  ram[5] <= data_in;
-	    
-			8'h32:  ram[6] <= data_in;
-		   8'h33:  ram[7] <= data_in;
-			8'h34:  ram[8] <= data_in;
-			8'h35:  ram[9] <= data_in;			
-	  	endcase
-	end
-	
-	case(addr)
-		8'h26:  data_out <= ram[0];
-		8'h27:  data_out <= ram[1];
+		idle: begin
+			if(res || initialization)
+				state <= init;		
+			if(start) begin
+				
+				data <= 0;
+				sec <= 0;
+				count_time <= 0;
+				secTime <= ram[1];
+				
+				s_ready_counter_start <= 0;
+				stop <= 0;
+				state <= counter;
+			end
+			if(we)
+				state <= write;	
+				
+			 case(addr)
+				8'h26:  data_out <= ram[0];
+				8'h27:  data_out <= ram[1];
 	  
-		8'h28:  data_out <= ram[2];
-		8'h29:  data_out <= ram[3];
-		8'h30:  data_out <= ram[4];
-		8'h31:  data_out <= ram[5];
+				8'h28:  data_out <= ram[2];
+				8'h29:  data_out <= ram[3];
+				8'h30:  data_out <= ram[4];
+				8'h31:  data_out <= ram[5];
 	  
-		8'h32:  data_out <= ram[6];
-		8'h33:  data_out <= ram[7];
-		8'h34:  data_out <= ram[8];
-		8'h35:  data_out <= ram[9];	
+				8'h32:  data_out <= ram[6];
+				8'h33:  data_out <= ram[7];
+				8'h34:  data_out <= ram[8];
+				8'h35:  data_out <= ram[9];	
+			endcase
+		end
+		
+		write: begin
+			case(addr)
+				8'h26:  ram[0] <= data_in;
+				8'h27:  ram[1] <= data_in;
+				
+				8'h28:  ram[2] <= data_in;
+				8'h29:  ram[3] <= data_in;
+				8'h30:  ram[4] <= data_in;
+				8'h31:  ram[5] <= data_in;
+			 
+				8'h32:  ram[6] <= data_in;
+				8'h33:  ram[7] <= data_in;
+				8'h34:  ram[8] <= data_in;
+				8'h35:  ram[9] <= data_in;			
+			endcase
+			state <= idle;		
+		end
+		
+		counter: begin
+			if(signal == 1 & flag) begin
+				data <= data + 1;
+				flag = 0;
+			end
+			if(signal == 0)
+				flag = 1;
+		
+	   	if(secTime > 0) begin
+				if(sec == 50000000) begin
+					secTime <= secTime - 1;
+					sec <= 0;
+				end
+				else begin
+					count_time <= count_time + 1;
+					sec <= sec + 1;
+				end
+			end
+			
+			if(secTime <= 0) begin
+		
+				ram[2] <= data[7:0];
+				ram[3] <= data[15:8];
+				ram[4] <= data[23:16];
+				ram[5] <= data[31:24];
+			  
+				ram[6] <= count_time[7:0];
+				ram[7] <= count_time[15:8];
+				ram[8] <= count_time[23:16];
+				ram[9] <= count_time[31:24];
+				
+				sec <= 0;
+				stop <= 1;
+				state <= end_counter;
+			end
+		end
+		end_counter : begin
+			if(sec == 500000) begin
+				s_ready_counter_start <= 1;
+				stop <= 0;
+				state <= idle;
+			end
+			else begin
+				sec = sec + 1;
+			end
+		end
 	endcase
-	
-	// Command: Reset 
-	if(ram[0] == 8'b00000001 || res) begin
-		ram[0] <= 0;
-		ram[1] <= 0;
-  	  
-		ram[2] <= 0;
-		ram[3] <= 0;
-		ram[4] <= 0;
-		ram[5] <= 0;
-  	  
-		ram[6] <= 0;
-		ram[7] <= 0;
-		ram[8] <= 0;
-		ram[9] <= 0;
-  	  
-  	   flag <= 0;
-  	   data <= 0;
-  	   count_time <= 0; 
-	end
-	
-	// Command: Read from eth.
-	if(!read_open) begin
-		read_close <= 0;
-	end
-	if(read_open && !read_close && ram[0] == 8'b00000000) begin
-		read_close <= 1;
-		ram[0] <= 8'b00000010;
-	end
-	
-	if(ram[0] == 8'b00000010) begin
-		ram[2] <= data[7:0];
-		ram[3] <= data[15:8];
-		ram[4] <= data[23:16];
-		ram[5] <= data[31:24];
-  	  
-		ram[6] <= count_time[7:0];
-		ram[7] <= count_time[15:8];
-		ram[8] <= count_time[23:16];
-		ram[9] <= count_time[31:24];
-		
-		// next state
-		ram[0] <= 8'b00000011; 
-	end
-	if(ram[0] == 8'b00000011) begin
-		data <= 0;
-		count_time <= 0;
-		ram[0] <= 0;
-	end
-	
-	if(start) begin
-		ram[0] <= 8'b10000000;
-		data <= 0;
-		count_time <= 0;
-		stop <= 0;
-		secTime <= ram[1];
-	end
-		
-	if(signal == 1 && flag && ram[0] == 8'b10000000) begin
-		data <= data + 1;
-		flag <= 0;
-	end
-	if(signal == 0 && ram[0] == 8'b10000000)
-		flag <= 1;
-		
-	if(ram[0] == 8'b10000000 && secTime > 0) begin
-		//count_time <= count_time + 1;
-		//sec <= sec + 1;
-		if(sec == 50000000) begin
-			secTime <= secTime - 1;
-			//count_time <= count_time - 1;
-			sec <= 0;
-		end
-		else begin
-			count_time <= count_time + 1;
-			sec <= sec + 1;
-		end
-	end
-	if(ram[0] == 8'b10000000 && secTime == 0) begin
-		stop <= 1;
-		sec <= 0;
-		//count_time <= count_time - 1;
-		ram[0] <= 8'b00000000;
-	end
 end
 endmodule
