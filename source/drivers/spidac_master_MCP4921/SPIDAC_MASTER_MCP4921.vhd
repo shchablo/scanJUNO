@@ -52,12 +52,14 @@ end SPIDAC_MASTER_MCP4921;
 
 architecture Behavioral of SPIDAC_MASTER_MCP4921 is
 
-	type STATE_TYPE is (INITIALIZATION, IDLE, REQUEST_DATA, INDEX_DECREMENT, REQUEST_LOAD, SEND);
+	type STATE_TYPE is (INITIALIZATION, IDLE, REQUEST_DATA, INDEX_DECREMENT, REQUEST_LOAD, SEND, ENDSEND);
 	signal state: STATE_TYPE := INITIALIZATION;
 	signal prev_data : std_logic_vector (11 downto 0) := (others => 'X');
 	signal write_buffer : std_logic_vector (15 downto 0) := (others => '0');
 	signal	SDI_iv :		std_logic;
-  signal	request:		std_logic;
+	signal	SCK_iv :		std_logic;
+	signal	request:		std_logic;
+	signal	even:		std_logic;
 	
 	constant DELAY:integer := 2;
 	constant IGNORE:std_logic := '0'; -- 0:use, 1:ignore
@@ -69,7 +71,7 @@ begin
 	
 	clk2SCK : entity work.ClOCK_DIVIDER(Behavioral) 
 					 generic map(DELAY => DELAY)
-					 port map (clk, SCK);	
+					 port map (clk, SCK_iv);	
 	
 	process(clk)
 		
@@ -77,6 +79,13 @@ begin
 		begin		
 				
 		if rising_edge(clk) then
+			
+			if(even = '0') then
+				even <= '1';
+			elsif(even = '1') then
+				even <= '0';
+			end if;
+			
 			case state is
 				WHEN INITIALIZATION =>
 					bit_ix := 16;
@@ -93,7 +102,7 @@ begin
 					SDI_iv <= '0';
 					if data /= prev_data then
 						state <= REQUEST_DATA;
-					elsif(request = '1' AND load = '1') then
+					elsif(request = '1' AND load = '1' AND even = '1') then
 						state <= REQUEST_LOAD;
 					end if;
 					
@@ -106,14 +115,13 @@ begin
 				when REQUEST_LOAD =>
 					request <= '0';
 					nCS <= '0';
-					nLDAC <= '1';
 					write_buffer <= (IGNORE & BUFFERED & GAIN & ACT & prev_data);
 						state <= INDEX_DECREMENT;
 						
 				when INDEX_DECREMENT =>
 						if(bit_ix = 0) then
 							nLDAC <= '0';
-							state <= IDLE;
+							state <= ENDSEND;
 						else
 							bit_ix := bit_ix - 1;
 							state <= SEND;
@@ -123,8 +131,17 @@ begin
 						SDI_iv <= write_buffer(bit_ix);
 						state <= INDEX_DECREMENT;
 				
+				when ENDSEND =>
+						if(bit_ix = 10) then
+							nLDAC <= '1';
+							bit_ix := 16;
+							state <= IDLE;
+						else
+							bit_ix := bit_ix + 1;
+						end if;
+				
 				when others =>
-					state <= idle;			
+					state <= IDLE;			
 											
 			end case;
 			
@@ -133,5 +150,6 @@ begin
 	end process;
 
 SDI <= SDI_iv;
+SCK <= SCK_iv;
 	
 end Behavioral;

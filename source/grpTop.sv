@@ -24,103 +24,113 @@
 //-------------------------------------------------------------------------------
 
 module grpTop(
-  input clock50Mhz,
-  input [9:0]keys_gate,
-  input key_restart,
   
-  output [3:0]gate_out,
+	input clock50Mhz,
   
-  output [9:0]gate_led,
-  output [7:0]address_hex0,
-  output [7:0]address_hex1,
-  output [7:0]address_hex2,
-  output [7:0]address_hex3,
+	input [9:0]keys_gate,
+	input key_restart,
   
-   output SCK, 
+	output [3:0]gate_out,
+  
+	// light indicator
+	output [9:0]gate_led,
+	output [7:0]address_hex0,
+	output [7:0]address_hex1,
+	output [7:0]address_hex2,
+	output [7:0]address_hex3,
+  
+	output SCK, 
 	output nCS,
 	output nLDAC,
 	output SDI,
-														 //             clk_clk_in_reset.reset_n
-	output wire  out_port_from_the_LAN_RST, //  LAN_RST_external_connection.export
-	output wire  out_port_from_the_LAN_CS,  //   LAN_CS_external_connection.export
-	input  wire  MISO_to_the_LAN,           //                 LAN_external.MISO
-	output wire  MOSI_from_the_LAN,         //                             .MOSI
-	output wire  SCLK_from_the_LAN,         //                             .SCLK		                   //                   clk_clk_in.clk		
-	input  wire  in_port_to_the_LAN_NINT,   // LAN_NINT_external_connection.export
+	
+	output wire  out_port_from_the_LAN_RST,
+	output wire  out_port_from_the_LAN_CS, 
+	input  wire  MISO_to_the_LAN,          
+	output wire  MOSI_from_the_LAN,        
+	output wire  SCLK_from_the_LAN,        
+	input  wire  in_port_to_the_LAN_NINT,  
 	
 	output pwm_out,
 	output [9:0]ch_pwm_out,
 	
 	input count,
 	
-	output test,
-	output test2,
-	output test3
+	output t_SCK,
+	output t_nCS,
+	output t_nLDAC,
+	output t_SDI
 	
   );
+  
 // Instantiation initializer. Signals and registers declared.
 wire init;
 wire reset;
-initializer initializer_inst(
-		clock50Mhz,
-		init
-		);
+initializer initializer_inst
+(
+	clock50Mhz,
+	init
+);
 		
 wire [7:0]data_in;
+
 // Instantiation vjtag. Signals and registers declared.
 wire [7:0]data_vjtag_out;
 wire [7:0]address_vjtag;
 wire addr_write_vjtag;
 wire write_vjtag;
 wire addr_read_vjtag;
-vjtag vjtag_inst_interface(
+vjtag vjtag_inst_interface
+(
 	init,
 	data_in, 
 	data_vjtag_out, 
 	address_vjtag,
 	write_vjtag,
 	addr_write_vjtag
-	);
+);
+
 // Instantiation eth. Signals and registers declared.
-wire [31:0] time_export;              //                         time.export
-wire [31:0] signals_export;            //                      signals.export
+wire [31:0]time_export;
+wire [31:0]signals_export;
 
-wire [7:0]  addr_export;               //                         addr.export              //                        rdata.export
+wire [7:0]addr_export;
 
 		
-wire [7:0]  wdata_export;              //                        wdata.export
-wire        swrite_export;             //                       swrite.export
-wire        sread_export;              //                        sread.export
+wire [7:0]wdata_export;
+wire        swrite_export;
+wire        sread_export; 
 		
-wire        cread_export;              //                        cread.export
+wire        cread_export;          
 wire        addr_write_export;
 
 wire        startStep_export;
 wire        stopStep_export;
 wire        swrite32_export;
-wire [31:0] wdata32_export;
-wire [31:0] rdata32_export;
+wire [31:0]wdata32_export;
+wire [31:0]rdata32_export;
 
-eth_top eth_inst (
-	key_restart,                   //             clk_clk_in_reset.reset_n
-	out_port_from_the_LAN_RST, //  LAN_RST_external_connection.export
-	out_port_from_the_LAN_CS,  //   LAN_CS_external_connection.export
-	MISO_to_the_LAN,           //                 LAN_external.MISO
-	MOSI_from_the_LAN,         //                             .MOSI
-	SCLK_from_the_LAN,         //                             .SCLK		
-	clock50Mhz,                       //                   clk_clk_in.clk		
-	in_port_to_the_LAN_NINT,   // LAN_NINT_external_connection.export
+eth_top eth_inst 
+(
+	key_restart,
+	out_port_from_the_LAN_RST,
+	out_port_from_the_LAN_CS,
+	MISO_to_the_LAN,
+	MOSI_from_the_LAN,
+	SCLK_from_the_LAN,	
+	clock50Mhz,		
+	in_port_to_the_LAN_NINT,
 	
-	time_export,               //                         time.export
-	signals_export,            //                      signals.export
-	addr_export,               //                         addr.export
-	data_in,              //                        rdata.export
+	time_export,
+	signals_export,
+	addr_export,
+	data_in,
 		
-	wdata_export,              //                        wdata.export
-	swrite_export,             //                       swrite.export
-	sread_export,              //                        sread.export
+	wdata_export,
+	swrite_export,
+	sread_export,
 		
-	cread_export,               //                        cread.export
+	cread_export,   
 	addr_write_export,
 	
 	startStep_export,
@@ -131,6 +141,7 @@ eth_top eth_inst (
 	rdata32_export
 
 );
+
 // Instantiation command. Signals and registers declared.
 wire write;
 wire write32;
@@ -163,7 +174,7 @@ command command_inst
 // Instantiation PWM. Signals and registers declared.
 wire [7:0]data_pwm;
 wire gen;
-wire pwm_test; // pwm_out - should be
+wire pwm_test; // test signal - should be
 pwm pwm_inst(
 	clock50Mhz,
 	addr,
@@ -173,7 +184,7 @@ pwm pwm_inst(
 	swrite32_export,
    wdata32_export,
 	
-	gen // gen - should be
+	gen
 );
 // Instantiation counter. Signals and registers declared.
 wire [7:0]data_counter;
@@ -190,11 +201,11 @@ counter counter_inst
 	time_export,
 	signals_export,
 	
-	start_dac, //start_dac,
+	start_dac,
 	s_ready_counter_start,
 	stopStep_export,
 	
-	pwm_test //count - should be or gen
+	count
 );
 
 // Instantiation gate. Signals and registers declared.
@@ -211,7 +222,7 @@ gate gate_inst(
   
   gen,
   ch_pwm_out,
-  pwm_test // pwm_out
+  pwm_out
   );
 // Instantiation DAC. Signals and registers declared.
 wire [7:0]data_DAC;
@@ -230,10 +241,9 @@ wire [7:0]data_DAC;
  
  startStep_export,
  start_dac,
- s_ready_counter_start,
- 
- test2
+ s_ready_counter_start
 );
+
 // Instantiation addr_indicators. Signals and registers declared.
 indicator16 indicator16_hex0(
  addr[3:0],
@@ -244,13 +254,16 @@ indicator16 indicator16_hex1(
  address_hex1
 );		
 	assign address_hex3[7:0] = 8'b11000000;
-	//assign address_hex3[7] = addr_write_export;
 	assign address_hex2[7:0] = 8'b00001001;
-	assign test = SDI;
-	assign test3 = stopStep_export;
+	
+	assign t_SDI = SDI;
+	assign t_SCK = SCK;
+	assign t_nCS = nCS;
+	assign t_nLDAC = nLDAC;
 
 reg [7:0]version;
 assign version[7:0] = 8'b00010000;
+
 // Instantiation selector. Signals and registers declared.
 selector selector_data_vjtag_in(
  addr,

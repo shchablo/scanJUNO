@@ -965,8 +965,8 @@ int simple_server()
                make_udp_reply_from_request(buf, result_array, strlen(result_array), myudpport);
            }
            else {
-                 sprintf(result_array,"[%u, %u]", time, count);
-              // sprintf(result_array,"[%d, %u]", dacInt, count);
+                 //sprintf(result_array,"[%u, %u]", time, count);
+                 sprintf(result_array,"[%d, %u]", dacInt, count);
 
                for(i = 0; i < 1500; i++)
                    buf[i] = bufUDP[i];
@@ -982,15 +982,6 @@ int simple_server()
                    dac2 =  dacTmp >> 8;
                    dacTmp = 0;
                    sendRun(dac1, dac2, cTimeChar,  &addrChar);
-
-                 //  IOWR_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE, 0x23);
-                 //  IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x01); // write addr signal
-                 //  IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
-                 //  for(i = 0; i < delay; i++);
-
-                 //  IOWR_ALTERA_AVALON_PIO_DATA(PIO_WDATA_BASE, 0x02);
-                 //  IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x08); // write data signal
-                 //  IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
 
                    IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x10);
                    IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
@@ -1103,15 +1094,6 @@ int simple_server()
                                     parsRun(i, &dacInt, &dac1, &dac2, &cTime, &cTimeChar, &step, &nSteps, &calibration);
                                     waitRun = 1;
                                     sendRun(dac1, dac2, cTimeChar,  &addrChar);
-
-                                  //  IOWR_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE, 0x23);
-                                  //  IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x01); // write addr signal
-                                  //  IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
-                                  //  for(i = 0; i < delay; i++);
-
-                                  //  IOWR_ALTERA_AVALON_PIO_DATA(PIO_WDATA_BASE, 0x02);
-                                  // IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x08); // write data signal
-                                  //  IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
 
                                    IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x10);
                                    IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);

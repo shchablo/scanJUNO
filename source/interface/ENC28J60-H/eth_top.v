@@ -1,45 +1,70 @@
+//------------------------------------------------------------------------------
+// Copyright [2016] [Shchablo Konstantin]
+//
+// Licensed under the Apache License, Version 2.0 (the "License"); 
+// you may not use this file except in compliance with the License. 
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, 
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+// either express or implied. 
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//------------------------------------------------------------------------------
 
+//------------------------------------------------------------------------------
+// Information.
+// Company: JINR PMTLab
+// Author: Shchablo Konstantin
+// Email: ShchabloKV@gmail.com
+// Tel: 8-906-796-76-53 (russia)
+//-------------------------------------------------------------------------------
 
 module eth_top(
 		
-		input  wire  reset_n,                   //             clk_clk_in_reset.reset_n
-		output wire  out_port_from_the_LAN_RST, //  LAN_RST_external_connection.export
-		output wire  out_port_from_the_LAN_CS,  //   LAN_CS_external_connection.export
-		input  wire  MISO_to_the_LAN,           //                 LAN_external.MISO
-		output wire  MOSI_from_the_LAN,         //                             .MOSI
-		output wire  SCLK_from_the_LAN,         //                             .SCLK
-		
-		input  wire  clk,                       //                   clk_clk_in.clk
-		
-		input  wire  in_port_to_the_LAN_NINT,   // LAN_NINT_external_connection.export
-		
-		input  wire [31:0] time_export,               //                         time.export
-		input  wire [31:0] signals_export,            //                      signals.export
-		output wire [7:0]  addr_export,               //                         addr.export
-		input  wire [7:0]  rdata_export,              //                        rdata.export
-		
-		output wire [7:0]  wdata_export,              //                        wdata.export
-		output wire        swrite_export,             //                       swrite.export
-		output wire        sread_export,              //                        sread.export
-		
-		output wire        cread_export,               //                        cread.export
-		output wire        addr_write_export,               //                        cread.export
-		
-		output wire 		 startStep_export,
-		input wire 		 	 stopStep_export,
-		
-		output wire  		  swrite32_export,
-		output wire [31:0]  wdata32_export,
-		input  wire [31:0]  rdata32_export  	
+	input  wire  reset_n,        
+	output wire  out_port_from_the_LAN_RST,
+	output wire  out_port_from_the_LAN_CS,  
+	input  wire  MISO_to_the_LAN,           
+	output wire  MOSI_from_the_LAN,        
+	output wire  SCLK_from_the_LAN,        
+	
+	input  wire  clk,                       
+	
+	input  wire  in_port_to_the_LAN_NINT,   
+	
+	input  wire [31:0]time_export,               
+	input  wire [31:0]signals_export,  
+	          
+	output wire [7:0]addr_export,             
+	input  wire [7:0]rdata_export,              
+	
+	output wire [7:0]wdata_export,              
+	output wire		 swrite_export,             
+	output wire      sread_export,             
+	
+	output wire	cread_export,  // counter read signal 
+	output wire	addr_write_export,  // addr wirite signal         
+	
+	/* signals for start and stop run */
+	output wire	startStep_export,
+	input wire	stopStep_export,
+	
+	output wire  		swrite32_export,
+	output wire [31:0]  wdata32_export,
+	input  wire [31:0]  rdata32_export  	
 	);
 
 wire  SS_n_from_the_LAN;
-wire  dclk_from_the_epcs;       //                epcs_external.dclk
-wire  sce_from_the_epcs;         //                             .sce
-wire  sdo_from_the_epcs;         //                             .sdo
-wire  data0_to_the_epcs;         //                             .data0
+wire  dclk_from_the_epcs; 
+wire  sce_from_the_epcs;
+wire  sdo_from_the_epcs;
+wire  data0_to_the_epcs; 
 
-wire        [7:0]signals_export_array;             //                       swrite.export
+wire        [7:0]signals_export_array;  
 wire        [7:0]status_export_array;       		
 
 assign status_export_array[4] = stopStep_export;

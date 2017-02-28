@@ -42,9 +42,7 @@ module spidac
  input wire start_step,
  output reg start,
  
- input wire s_ready_counter_start,
- 
- output reg run
+ input wire s_ready_counter_start
 );
 
 wire clk_40Mhz;
@@ -62,7 +60,7 @@ assign code[7:0] = ram[3];
 assign code[15:8] = ram[4];
 
 wire wRun;
-//reg run;
+reg run;
 assign wRun = run;
 reg s_ready_write_dac;
 reg switch_start_step;
@@ -122,7 +120,7 @@ always @ (posedge clk) begin
 	end
   
   if(ram[0] == 8'b0000010) begin
-		counter_load <= 2;
+		counter_load <= 10;
 		ram[0] <= 8'b00000100;
 	end
 	if(counter_load > 0 && ram[0] == 8'b00000100) begin
