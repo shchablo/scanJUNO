@@ -34,15 +34,16 @@ module spidac
  input wire [DATA_WIDTH-1:0]data_in,
  output wire [DATA_WIDTH-1:0]data_out,
  
+ input wire we32,
+ input wire [31:0]data_in32,
+ 
  output reg SCK,
  output reg nCS,
  output reg nLDAC,
  output reg SDI,
  
  input wire start_step,
- output reg start,
- 
- input wire s_ready_counter_start
+ output reg start_counter
 );
 
 wire clk_40Mhz;
@@ -50,89 +51,23 @@ reg [DATA_WIDTH-1:0]ram[ADDR_WIDTH-1:0];
 
 wire [15:0]data;
 
-reg load;
 assign data[7:0] = ram[1];
 assign data[15:8] = ram[2];
-integer counter_load;
 
 wire [15:0]code;
 assign code[7:0] = ram[3];
 assign code[15:8] = ram[4];
 
-wire wRun;
-reg run;
-assign wRun = run;
-reg s_ready_write_dac;
-reg switch_start_step;
-always @ (start_step or s_ready_write_dac or init) begin 
-	if(init) begin
-		switch_start_step <= 1;
-		run <= 0;
-	end	
-	if(start_step == 0)
-		switch_start_step <= 1;
-
-	if(start_step == 1 && s_ready_write_dac == 1) begin
-		if(switch_start_step == 1) begin
-			run <= 1;
-			switch_start_step <= 0;
-		end
-	end
-	else
-		run <= 0;
-end
-
-reg switch_nLDAC;
-always @ (nLDAC or s_ready_counter_start or init) begin 
-	if(init) begin
-		switch_nLDAC = 1;
-		start = 0;
-	end	
-	if(nLDAC == 1)
-		switch_nLDAC = 1;
-
-	if(nLDAC == 0 && s_ready_counter_start == 1) begin
-		if(switch_nLDAC == 1) begin
-			start = 1;
-			switch_nLDAC = 0;
-		end
-	end
-	else
-		start = 0;
-end
-
 always @ (posedge clk) begin 
 
 // initialization
 	if(init) begin
-	   s_ready_write_dac <= 1;
 		code <= 0;
 		ram[0] <= 8'b00000000;
 		ram[1] <= 0;
 		ram[2] <= 0;
-		load <= 0;
-		counter_load <= 0;
 	end
 	
-  if(wRun) begin
-		ram[0] <= 8'b00000010;
-		s_ready_write_dac <= 0;
-	end
-  
-  if(ram[0] == 8'b0000010) begin
-		counter_load <= 10;
-		ram[0] <= 8'b00000100;
-	end
-	if(counter_load > 0 && ram[0] == 8'b00000100) begin
-		load <= 1;
-		counter_load <= counter_load - 1;
-	end
-	if(counter_load == 0 && ram[0] == 8'b00000100) begin
-		load <= 0;
-		s_ready_write_dac <= 1;
-		ram[0] <= 8'b00000000;
-	end
-  
   // write memory	
 	if(we) begin
 		case(addr)
@@ -143,6 +78,13 @@ always @ (posedge clk) begin
 			8'h24:  ram[1] <= data_in;
 			8'h25:  ram[2] <= data_in;
 		endcase
+	end
+	
+	if(we32) begin
+		if(addr == 8'h47) begin
+			ram[1] <= data_in32[7:0];
+			ram[2] <= data_in32[15:8];		
+	  	end
 	end
 		
 	// read memory  			
@@ -159,8 +101,6 @@ always @ (posedge clk) begin
 		ram[0] <= 0;
 		ram[1] <= 0;
 		ram[2] <= 0;
-		load <= 0;
-		counter_load <= 0;
 	end
 end
 
@@ -174,12 +114,14 @@ SPIDAC_MASTER_MCP4921 SPIDAC_MASTER_MCP4921_inst
 	(
 		clk_40Mhz,
 		data[11:0],
-		load,
+		start_step,
 		
 		SCK, 
 		nCS,
 		nLDAC,
-		SDI
+		SDI,
+		
+		start_counter
 	);
 
 endmodule

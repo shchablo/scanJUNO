@@ -33,23 +33,24 @@ module counter
 	input wire [DATA_WIDTH-1:0]data_in, output wire [DATA_WIDTH-1:0]data_out,
 	input wire we, input wire initialization, input wire res,
 	
-	input read_open,
 	
 	output wire [31:0]counter_time_ex,
 	output wire [31:0]data_ex,
 	
 	input wire start,
-	output reg s_ready_counter_start,
 	output wire stop,
 	
-	input wire signal
+	input wire signal,
+	
+	output wire dwrite
 );
 
 (* syn_encoding = "safe" *) reg [3:0] state; 
 
-parameter init = 0, idle = 1, write = 2, counter = 3, end_counter = 4;
+parameter init = 0, idle = 1, write = 2, counter = 3, delay = 4, end_counter = 5;
 
 reg [DATA_WIDTH-1:0]ram[ADDR_WIDTH-1:0];
+
 reg flag;
 reg [31:0]count_time;
 reg [31:0]sec;
@@ -65,7 +66,32 @@ assign data_ex[7:0] = ram[2];
 assign data_ex[15:8] = ram[3];
 assign data_ex[23:16] = ram[4];
 assign data_ex[31:24] = ram[5];
-	
+
+assign dwrite = enable;
+
+reg enable;
+always @ (posedge signal) begin
+
+	if(enable) begin
+		data <= data + 1;
+	end
+	else begin
+		data <= 0;
+	end
+
+end
+always @ (posedge clk) begin
+
+	if(enable) begin
+		count_time <= count_time + 1;
+	end
+	else begin
+		count_time <= 0;
+	end
+
+end
+
+
 always @ (posedge clk) begin 
 	case(state)
 		init: begin
@@ -82,30 +108,22 @@ always @ (posedge clk) begin
 			ram[8] <= 0;
 			ram[9] <= 0;
 			
+			sec <= 0;
+			secTime <= 0;
+			
 			flag = 0;
-			data <= 0;
-			count_time <= 0;
 			
-			s_ready_counter_start <= 1;
-					
 			stop <= 0;
-			
+			enable <= 0;
 			state <= idle;
 		end
 		
 		idle: begin
 			if(res || initialization)
-				state <= init;		
+				state <= init;
 			if(start) begin
-				
-				data <= 0;
 				sec <= 0;
-				count_time <= 0;
-				secTime <= ram[1];
-				
-				s_ready_counter_start <= 0;
-				stop <= 0;
-				state <= counter;
+				state <= delay;
 			end
 			if(we)
 				state <= write;	
@@ -143,28 +161,33 @@ always @ (posedge clk) begin
 			endcase
 			state <= idle;		
 		end
-		
-		counter: begin
-			if(signal == 1 & flag) begin
-				data <= data + 1;
-				flag = 0;
+		delay: begin
+			if(sec == 49999) begin
+				enable <= 1;		
+				sec <= 0;
+				secTime <= ram[1];
+				stop <= 0;
+				state <= counter;
 			end
-			if(signal == 0)
-				flag = 1;
-		
+			else begin
+				sec <= sec + 1;
+			end
+		end
+		counter: begin
 	   	if(secTime > 0) begin
-				if(sec == 50000000) begin
+				if(sec == 49999999) begin
 					secTime <= secTime - 1;
 					sec <= 0;
 				end
 				else begin
-					count_time <= count_time + 1;
 					sec <= sec + 1;
 				end
 			end
-			
-			if(secTime <= 0) begin
-		
+			else begin
+				enable <= 0;
+				sec <= 0;
+				stop <= 1;
+				
 				ram[2] <= data[7:0];
 				ram[3] <= data[15:8];
 				ram[4] <= data[23:16];
@@ -174,15 +197,12 @@ always @ (posedge clk) begin
 				ram[7] <= count_time[15:8];
 				ram[8] <= count_time[23:16];
 				ram[9] <= count_time[31:24];
-				
-				sec <= 0;
-				stop <= 1;
+	
 				state <= end_counter;
 			end
 		end
 		end_counter : begin
 			if(sec == 500000) begin
-				s_ready_counter_start <= 1;
 				stop <= 0;
 				state <= idle;
 			end
@@ -192,4 +212,5 @@ always @ (posedge clk) begin
 		end
 	endcase
 end
+
 endmodule

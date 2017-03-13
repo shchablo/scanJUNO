@@ -38,17 +38,23 @@ module command
 	
 	input write_vjtag,
 	input write_export,
+	input write32_export,
 	
-	output reg sw_out, 
+	output reg sw_out,
+	output reg sw_out32,	
 	
 	input [7:0]data_in_export,
 	input [7:0]data_in_vjtag,
 	
-	output reg [7:0]data_out
+	input [31:0]data_in32_export,
+	
+	output reg [7:0]data_out,
+	output reg [31:0]data_out32
 ); 
-	(* syn_encoding = "safe" *) reg [4:0] state;
 
-	parameter D0 = 0, R0 = 1, R1 = 2, SW0 = 3, SW1 = 4, vjtag_AD0 = 5, vjtag_AD1 = 6, export_AD0 = 7, export_AD1 = 8, INIT0 = 9, SW0_export = 10, SW1_export = 11;
+	(* syn_encoding = "safe" *) reg [5:0] state;
+
+	parameter D0 = 0, R0 = 1, R1 = 2, SW0 = 3, SW1 = 4, vjtag_AD0 = 5, vjtag_AD1 = 6, export_AD0 = 7, export_AD1 = 8, INIT0 = 9, SW0_export = 10, SW1_export = 11, SW0_export32 = 12, SW1_export32 = 13;
 
 	// Determine the next state
 	integer res_count;
@@ -60,6 +66,7 @@ module command
 					
 					reset_out = 1'b0;
 					sw_out  = 1'b0;
+					sw_out32  = 1'b0;
 				
 					 if(!reset || (addr == 8'h01 && data_out == 8'h02))
 							state <= R0;
@@ -67,6 +74,8 @@ module command
 							state <= SW0;
 					if(write_export)
 							state <= SW0_export;
+					if(write32_export)
+							state <= SW0_export32;
 					 if(we_addr_vjtag)
 							state <= vjtag_AD0;
 					 if(we_addr_export)
@@ -74,6 +83,7 @@ module command
 					 if(init)
 							state <= INIT0;
 				end
+				
 			 // reset
 				R0: begin
 					res_count <= 50000;
@@ -93,7 +103,7 @@ module command
 				
 				// signal write vjtag
 				SW0: begin
-					sw_count <= 3;
+					sw_count <= 20;
 					state <= SW1;
 					end
 				SW1:
@@ -108,9 +118,9 @@ module command
 						state <= D0;
 					end
 					
-					// signal write export
+				// signal write export
 				SW0_export: begin
-					sw_count <= 3;
+					sw_count <= 20;
 					state <= SW1_export;
 					end
 				SW1_export:
@@ -124,10 +134,27 @@ module command
 					else begin
 						state <= D0;
 					end
+					
+				// signal write32 export
+				SW0_export32: begin
+					sw_count <= 20;
+					state <= SW1_export32;
+					end
+				SW1_export32:
+					if (sw_count > 0) begin
+						state <= SW1_export32;
+						sw_count <= sw_count - 1;
+						
+						sw_out32  = 1'b1;
+						data_out32 <= data_in32_export;
+					end
+					else begin
+						state <= D0;
+					end
 				
 				// addr vjtag
 				vjtag_AD0: begin
-					AD_count <= 3;
+					AD_count <= 20;
 					state <= vjtag_AD1;
 					end
 				vjtag_AD1:
@@ -143,7 +170,7 @@ module command
 					
 				// addr eth	
 				export_AD0: begin
-					AD_count <= 50000;
+					AD_count <= 20;
 					state <= export_AD1;
 					end
 				export_AD1:

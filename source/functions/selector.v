@@ -47,6 +47,7 @@ begin
    8'h23:  data = dac;
    8'h24:  data = dac;
    8'h25:  data = dac;
+	8'h47:  data = dac;
    
    8'h26:  data = counter;
    8'h27:  data = counter;

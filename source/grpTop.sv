@@ -59,7 +59,22 @@ module grpTop(
 	output t_SCK,
 	output t_nCS,
 	output t_nLDAC,
-	output t_SDI
+	output t_SDI,
+	
+	output t_startStep_export,
+	output t_start_count_dac,
+	output t_start_counter,
+	output t_stopStep_export,
+	
+	output t_write,
+	output t_write32,
+	
+	output t_pwm_out,
+	output t_cflag,
+	
+	output t_clk,
+	
+	output t_count
 	
   );
   
@@ -95,18 +110,18 @@ wire [31:0]time_export;
 wire [31:0]signals_export;
 
 wire [7:0]addr_export;
-
-		
+	
 wire [7:0]wdata_export;
-wire        swrite_export;
-wire        sread_export; 
+wire swrite_export;
+wire sread_export; 
 		
-wire        cread_export;          
-wire        addr_write_export;
+wire cread_export;          
+wire addr_write_export;
 
-wire        startStep_export;
-wire        stopStep_export;
-wire        swrite32_export;
+wire startStep_export;
+wire stopStep_export;
+
+wire swrite32_export;
 wire [31:0]wdata32_export;
 wire [31:0]rdata32_export;
 
@@ -123,13 +138,13 @@ eth_top eth_inst
 	
 	time_export,
 	signals_export,
+	
 	addr_export,
-	data_in,
-		
-	wdata_export,
+	data_in, // output data (from FOGA)
+	wdata_export, // input data (from NIOS II)
+	
 	swrite_export,
-	sread_export,
-		
+	sread_export,		
 	cread_export,   
 	addr_write_export,
 	
@@ -146,6 +161,7 @@ eth_top eth_inst
 wire write;
 wire write32;
 wire [7:0]data;
+wire [31:0]data32;
 wire [7:0]addr;
 command command_inst
 (
@@ -162,34 +178,37 @@ command command_inst
 	
 	write_vjtag,
 	swrite_export,
+	swrite32_export,
 	
 	write,
+	write32,
 	
 	wdata_export,
 	data_vjtag_out,
+	wdata32_export,
 	
-	data
+	data,
+	data32
 );	
 
 // Instantiation PWM. Signals and registers declared.
 wire [7:0]data_pwm;
 wire gen;
-wire pwm_test; // test signal - should be
+// wire pwm_test; // when test count and gen
 pwm pwm_inst(
 	clock50Mhz,
 	addr,
 	data, data_pwm,
 	write, init, reset,
 
-	swrite32_export,
-   wdata32_export,
+	 write32,
+    data32,
 	
 	gen
 );
 // Instantiation counter. Signals and registers declared.
 wire [7:0]data_counter;
-wire start_dac;
-wire s_ready_counter_start;
+wire start_counter;
 counter counter_inst
  (
 	clock50Mhz,
@@ -197,20 +216,21 @@ counter counter_inst
 	data, data_counter,
 	write, init, reset,
 	
-	cread_export,
 	time_export,
 	signals_export,
 	
-	start_dac,
-	s_ready_counter_start,
+	start_counter,
 	stopStep_export,
 	
-	count
+	 count,
+	
+	t_cflag
 );
 
 // Instantiation gate. Signals and registers declared.
 wire [7:0]data_gate;
-gate gate_inst(
+gate gate_inst
+(
  	clock50Mhz,
 	addr,
 	data, data_gate,
@@ -224,6 +244,7 @@ gate gate_inst(
   ch_pwm_out,
   pwm_out
   );
+  
 // Instantiation DAC. Signals and registers declared.
 wire [7:0]data_DAC;
  spidac spidac_inst
@@ -234,32 +255,52 @@ wire [7:0]data_DAC;
  data,
  data_DAC,
  
+ write32,
+ data32,
+ 
  SCK,
  nCS,
  nLDAC,
  SDI,
  
  startStep_export,
- start_dac,
- s_ready_counter_start
+ start_counter
 );
 
 // Instantiation addr_indicators. Signals and registers declared.
-indicator16 indicator16_hex0(
+indicator16 indicator16_hex0
+(
  addr[3:0],
  address_hex0
 );
-indicator16 indicator16_hex1(
+indicator16 indicator16_hex1
+(
  addr[7:4],
  address_hex1
-);		
-	assign address_hex3[7:0] = 8'b11000000;
-	assign address_hex2[7:0] = 8'b00001001;
+);	
+
 	
-	assign t_SDI = SDI;
-	assign t_SCK = SCK;
-	assign t_nCS = nCS;
-	assign t_nLDAC = nLDAC;
+assign address_hex3[7:0] = 8'b11000000;
+assign address_hex2[7:0] = 8'b00001001;
+
+assign t_SDI = SDI;
+assign t_SCK = SCK;
+assign t_nCS = nCS;
+assign t_nLDAC = nLDAC;
+
+assign t_startStep_export = startStep_export;
+assign t_start_counter = start_counter;
+assign t_stopStep_export = stopStep_export;
+
+assign t_write = write;
+assign t_write32 = write32;
+
+assign t_pwm_out = pwm_out; // может повлиять на задержку
+assign t_start_counter = start_counter; // может повлиять на задержку
+
+assign t_clk = clock50Mhz;
+assign t_count = count;
+
 
 reg [7:0]version;
 assign version[7:0] = 8'b00010000;

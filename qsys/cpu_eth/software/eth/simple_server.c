@@ -325,13 +325,12 @@ alt_u16 enc28j60PacketReceive(alt_u16 maxlen, unsigned char* packet)
 
 // send data
 void sendRun(unsigned char dac1, unsigned char dac2,
-            unsigned char cTimeChar, unsigned char *addrChar)
+            unsigned char cTimeChar, unsigned char *addrChar, int value)
 {
     unsigned char addrTmp = *addrChar;
     int i = 0;
     int delay = 50000; // ml sec.
-
-    // write dac code
+  /*  // write dac code
     IOWR_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE, 0x24);
     IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x01); // write addr signal
     IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
@@ -350,7 +349,17 @@ void sendRun(unsigned char dac1, unsigned char dac2,
     IOWR_ALTERA_AVALON_PIO_DATA(PIO_WDATA_BASE, dac2);
     IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x08); // write data signal
     IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
+    for(i = 0; i < delay; i++); */
+
+    IOWR_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE, 0x47);
+    IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x01); // write addr signal
+    IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
     for(i = 0; i < delay; i++);
+
+    IOWR_ALTERA_AVALON_PIO_DATA(DATA32_BASE, value);
+    IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x20);
+    IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
+
 
     // write  time
     IOWR_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE,  0x27);
@@ -367,7 +376,6 @@ void sendRun(unsigned char dac1, unsigned char dac2,
     IOWR_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE, *addrChar);
     IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x01); // write addr signal
     IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
-    for(i = 0; i < delay; i++);
 
 }
 
@@ -432,7 +440,7 @@ void sendFreq(unsigned int *freqInt, unsigned char *value, unsigned char *addrCh
 
     *freqInt = atoi(value);
     IOWR_ALTERA_AVALON_PIO_DATA(DATA32_BASE, *freqInt);
-    for(i = 0; i < delay; i++);
+  //  for(i = 0; i < delay; i++);
     IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x20);
     IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
 
@@ -981,7 +989,7 @@ int simple_server()
                    dac1 =  dacTmp;
                    dac2 =  dacTmp >> 8;
                    dacTmp = 0;
-                   sendRun(dac1, dac2, cTimeChar,  &addrChar);
+                   sendRun(dac1, dac2, cTimeChar,  &addrChar, dacInt);
 
                    IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x10);
                    IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
@@ -1093,7 +1101,7 @@ int simple_server()
                                 if(!waitRun) {
                                     parsRun(i, &dacInt, &dac1, &dac2, &cTime, &cTimeChar, &step, &nSteps, &calibration);
                                     waitRun = 1;
-                                    sendRun(dac1, dac2, cTimeChar,  &addrChar);
+                                    sendRun(dac1, dac2, cTimeChar,  &addrChar, dacInt);
 
                                    IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x10);
                                    IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
@@ -1347,7 +1355,7 @@ int simple_server()
                        if(!waitRun) {
                            parsRun(i, &dacInt, &dac1, &dac2, &cTime, &cTimeChar, &step, &nSteps, &calibration);
                            waitRun = 1;
-                           sendRun(dac1, dac2, cTimeChar,  &addrChar);
+                           sendRun(dac1, dac2, cTimeChar,  &addrChar, dacInt);
                            IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x10);
                            IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
                        }

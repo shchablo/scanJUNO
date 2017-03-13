@@ -46,7 +46,9 @@ entity SPIDAC_MASTER_MCP4921 is
 		SCK : OUT std_logic; -- 20 MHz 
 		nCS: OUT std_logic; -- chip select
 		nLDAC: OUT std_logic;
-		SDI: OUT std_logic
+		SDI: OUT std_logic;
+		
+		start_count: OUT std_logic
 	);
 end SPIDAC_MASTER_MCP4921;
 
@@ -60,6 +62,7 @@ architecture Behavioral of SPIDAC_MASTER_MCP4921 is
 	signal	SCK_iv :		std_logic;
 	signal	request:		std_logic;
 	signal	even:		std_logic;
+	signal	start_count_iv :		std_logic;
 	
 	constant DELAY:integer := 2;
 	constant IGNORE:std_logic := '0'; -- 0:use, 1:ignore
@@ -91,6 +94,7 @@ begin
 					bit_ix := 16;
 					nCS <= '1';
 					nLDAC <= '1';
+					start_count_iv <= '0';
 					SDI_iv <= '0';
 					request <= '0';
 					state <= IDLE;
@@ -99,10 +103,12 @@ begin
 					bit_ix := 16;
 					nCS <= '1';
 					nLDAC <= '1';
+					start_count_iv <= '0';
 					SDI_iv <= '0';
-					if data /= prev_data then
-						state <= REQUEST_DATA;
-					elsif(request = '1' AND load = '1' AND even = '1') then
+					--if data /= prev_data then
+						--state <= REQUEST_DATA;
+					--elsif(request = '1' AND load = '1' AND even = '1') then
+					if(load = '1' AND even = '1') then
 						state <= REQUEST_LOAD;
 					end if;
 					
@@ -115,12 +121,13 @@ begin
 				when REQUEST_LOAD =>
 					request <= '0';
 					nCS <= '0';
-					write_buffer <= (IGNORE & BUFFERED & GAIN & ACT & prev_data);
+					--write_buffer <= (IGNORE & BUFFERED & GAIN & ACT & prev_data);
+					write_buffer <= (IGNORE & BUFFERED & GAIN & ACT & data);
 						state <= INDEX_DECREMENT;
 						
 				when INDEX_DECREMENT =>
-						if(bit_ix = 0) then
-							nLDAC <= '0';
+						if(bit_ix = 0) then						
+							SDI_iv <= '0';
 							state <= ENDSEND;
 						else
 							bit_ix := bit_ix - 1;
@@ -132,8 +139,14 @@ begin
 						state <= INDEX_DECREMENT;
 				
 				when ENDSEND =>
-						if(bit_ix = 10) then
+						if(bit_ix = 0) then
+							nCS <= '1';
+							nLDAC <= '0';
+							start_count_iv <= '1';
+							bit_ix := bit_ix + 1;
+						elsif(bit_ix = 16) then
 							nLDAC <= '1';
+							start_count_iv <= '0';
 							bit_ix := 16;
 							state <= IDLE;
 						else
@@ -151,5 +164,6 @@ begin
 
 SDI <= SDI_iv;
 SCK <= SCK_iv;
+start_count <= start_count_iv;
 	
 end Behavioral;

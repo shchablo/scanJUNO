@@ -41,13 +41,12 @@ module eth_top(
 	          
 	output wire [7:0]addr_export,             
 	input  wire [7:0]rdata_export,              
-	
 	output wire [7:0]wdata_export,              
+	
 	output wire		 swrite_export,             
 	output wire      sread_export,             
-	
-	output wire	cread_export,  // counter read signal 
-	output wire	addr_write_export,  // addr wirite signal         
+	output wire		 cread_export,  // counter read signal 
+	output wire		 addr_write_export,  // addr wirite signal         
 	
 	/* signals for start and stop run */
 	output wire	startStep_export,
@@ -55,7 +54,7 @@ module eth_top(
 	
 	output wire  		swrite32_export,
 	output wire [31:0]  wdata32_export,
-	input  wire [31:0]  rdata32_export  	
+	input  wire [31:0]  rdata32_export 
 	);
 
 wire  SS_n_from_the_LAN;
@@ -64,47 +63,50 @@ wire  sce_from_the_epcs;
 wire  sdo_from_the_epcs;
 wire  data0_to_the_epcs; 
 
-wire        [7:0]signals_export_array;  
-wire        [7:0]status_export_array;       		
+wire	[7:0]signals_export_array;  
+wire	[7:0]status_export_array;       		
 
 assign status_export_array[4] = stopStep_export;
 
+assign rwrite32_export = signals_export_array[6];
 assign swrite32_export = signals_export_array[5];
 assign startStep_export = signals_export_array[4];
 assign swrite_export = signals_export_array[3];
 assign sread_export = signals_export_array[2];
 assign cread_export = signals_export_array[1];
 assign addr_write_export = signals_export_array[0];
+
 sopc sopc_inst (
 		
-		reset_n,                   //             clk_clk_in_reset.reset_n
-		
-		out_port_from_the_LAN_RST, //  LAN_RST_external_connection.export
-		out_port_from_the_LAN_CS,  //   LAN_CS_external_connection.export
-		MISO_to_the_LAN,           //                 LAN_external.MISO
-		MOSI_from_the_LAN,         //                             .MOSI
-		SCLK_from_the_LAN,         //                             .SCLK
-		SS_n_from_the_LAN,         //                             .SS_n
-		
-		clk,                       //                   clk_clk_in.clk
-		in_port_to_the_LAN_NINT,   // LAN_NINT_external_connection.export
-		
-		dclk_from_the_epcs,        //                epcs_external.dclk
-		sce_from_the_epcs,         //                             .sce
-		sdo_from_the_epcs,         //                             .sdo
-		data0_to_the_epcs,
-				
-		time_export,               //                         time.export
-		signals_export,            //                      signals.export
-		addr_export,               //                         addr.export
-		rdata_export,              //                        rdata.export
-		
-		wdata_export,              //                        wdata.export
-		
-		signals_export_array,
-		status_export_array,
-		
-		wdata32_export
+	reset_n,           
+	
+	out_port_from_the_LAN_RST,
+	out_port_from_the_LAN_CS,
+	MISO_to_the_LAN,      
+	MOSI_from_the_LAN,       
+	SCLK_from_the_LAN,         
+	SS_n_from_the_LAN,      
+	
+	clk,                      
+	in_port_to_the_LAN_NINT,   
+	
+	dclk_from_the_epcs,      
+	sce_from_the_epcs,       
+	sdo_from_the_epcs,    
+	data0_to_the_epcs,
+			
+	time_export,        
+	signals_export,          
+	addr_export,         
+	rdata_export,            
+	
+	wdata_export,      
+	
+	signals_export_array,
+	status_export_array,
+	
+	wdata32_export,
+	rdata32_export
 );
 
 endmodule

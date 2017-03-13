@@ -72,6 +72,7 @@ always @(posedge tck) begin
 		we <= 0;
 		addr_we <= 0;
 	end
+	
 	// RESET
 	if(address == 8'h01 && data_out == 8'b00000001) begin
 		shift_dr_out <= 0;
