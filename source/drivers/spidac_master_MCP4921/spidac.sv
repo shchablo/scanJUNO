@@ -54,18 +54,19 @@ wire [15:0]data;
 assign data[7:0] = ram[1];
 assign data[15:8] = ram[2];
 
-wire [15:0]code;
-assign code[7:0] = ram[3];
-assign code[15:8] = ram[4];
-
 always @ (posedge clk) begin 
-
+	
+	if(res) begin
+		ram[0] <= 8'b00000000;
+		ram[1] <= 8'hFF;
+		ram[2] <= 8'h0F;
+	end
+	
 // initialization
 	if(init) begin
-		code <= 0;
 		ram[0] <= 8'b00000000;
-		ram[1] <= 0;
-		ram[2] <= 0;
+		ram[1] <= 8'hFF;
+		ram[2] <= 8'h0F;
 	end
 	
   // write memory	
@@ -121,7 +122,9 @@ SPIDAC_MASTER_MCP4921 SPIDAC_MASTER_MCP4921_inst
 		nLDAC,
 		SDI,
 		
-		start_counter
+		start_counter,
+		
+		res
 	);
 
 endmodule

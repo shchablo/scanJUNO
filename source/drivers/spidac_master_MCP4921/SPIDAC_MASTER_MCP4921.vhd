@@ -48,7 +48,9 @@ entity SPIDAC_MASTER_MCP4921 is
 		nLDAC: OUT std_logic;
 		SDI: OUT std_logic;
 		
-		start_count: OUT std_logic
+		start_count: OUT std_logic;
+		
+		reset: IN std_logic
 	);
 end SPIDAC_MASTER_MCP4921;
 
@@ -68,7 +70,7 @@ architecture Behavioral of SPIDAC_MASTER_MCP4921 is
 	constant IGNORE:std_logic := '0'; -- 0:use, 1:ignore
 	constant BUFFERED:std_logic := '0'; -- 0:unbuffered, 1:buffered
 	constant GAIN:std_logic := '1'; -- 0:2X, 1:1X
-	constant ACT:std_logic := '0'; -- 0:shutdown, 1:active
+	constant ACT:std_logic := '1'; -- 0:shutdown, 1:active
 
 begin
 	
@@ -91,6 +93,9 @@ begin
 			
 			case state is
 				WHEN INITIALIZATION =>
+					if(reset = '1') then
+						state <= INITIALIZATION;
+					end if;
 					bit_ix := 16;
 					nCS <= '1';
 					nLDAC <= '1';
@@ -100,6 +105,9 @@ begin
 					state <= IDLE;
 				
 				WHEN IDLE =>
+					if(reset = '1') then
+						state <= INITIALIZATION;
+					end if;
 					bit_ix := 16;
 					nCS <= '1';
 					nLDAC <= '1';
@@ -113,20 +121,29 @@ begin
 					end if;
 					
 				when REQUEST_DATA =>
+					if(reset = '1') then
+						state <= INITIALIZATION;
+					end if;
 					prev_data <= data;
 					request <= '1';
 					state <= IDLE;
 					
 					
 				when REQUEST_LOAD =>
+					if(reset = '1') then
+						state <= INITIALIZATION;
+					end if;
 					request <= '0';
-					nCS <= '0';
 					--write_buffer <= (IGNORE & BUFFERED & GAIN & ACT & prev_data);
 					write_buffer <= (IGNORE & BUFFERED & GAIN & ACT & data);
 						state <= INDEX_DECREMENT;
 						
 				when INDEX_DECREMENT =>
-						if(bit_ix = 0) then						
+					if(reset = '1') then
+						state <= INITIALIZATION;
+					end if;
+						if(bit_ix = 20) then
+							bit_ix := 0;
 							SDI_iv <= '0';
 							state <= ENDSEND;
 						else
@@ -135,10 +152,25 @@ begin
 						end if;
 								
 				when SEND =>
-						SDI_iv <= write_buffer(bit_ix);
-						state <= INDEX_DECREMENT;
+					if(reset = '1') then
+						state <= INITIALIZATION;
+					end if;
+						if(bit_ix = 0) then
+							SDI_iv <= write_buffer(bit_ix);
+							bit_ix := 20;
+						elsif(bit_ix = 20) then
+							--nCS <= '1';
+							state <= INDEX_DECREMENT;
+						else 
+							nCS <= '0';
+							SDI_iv <= write_buffer(bit_ix);
+							state <= INDEX_DECREMENT;
+						end if;
 				
 				when ENDSEND =>
+					if(reset = '1') then
+						state <= INITIALIZATION;
+					end if;
 						if(bit_ix = 0) then
 							nCS <= '1';
 							nLDAC <= '0';

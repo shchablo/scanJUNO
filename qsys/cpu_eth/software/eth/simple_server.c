@@ -28,7 +28,9 @@
 #define PSTR(s) s
 
 static unsigned char mymac[6] = { 0x54, 0x55, 0x58, 0x10, 0x00, 0x24 }; // mac
-static unsigned char myip[4] = { 159, 93, 74, 142 }; // ip
+//static unsigned char myip[4] = { 192, 168, 0, 51 }; // ip
+static unsigned char myip[4] = { 159, 93, 74, 142 };
+//static char baseurl[] = "http://192.168.0.50/"; // a DNS server (baseurl must end in "/"):
 static char baseurl[] = "http://159.93.74.142/"; // a DNS server (baseurl must end in "/"):
 static unsigned int mywwwport = 80; // listen port for tcp/www (max range 1-254)
 static unsigned int myudpport = 1200; // listen port for udp
@@ -88,7 +90,7 @@ void enc28j60WriteOp(unsigned char op, unsigned char address, unsigned char data
 
 void enc28j60ReadBuffer(alt_u16 len, unsigned char* data)
 {
-    ENC28J60_CSL();
+   ENC28J60_CSL();
     // issue read command
     SPInet_Write(ENC28J60_READ_BUF_MEM);
     while (len--) {
@@ -438,6 +440,9 @@ void sendFreq(unsigned int *freqInt, unsigned char *value, unsigned char *addrCh
     IOWR_ALTERA_AVALON_PIO_DATA(PIO_SIGNALS_BASE, 0x00);
     for(i = 0; i < delay; i++);
 
+   // *freqInt = (1/20*atof(value)*10^(-9)) - 10;
+   // if(*freqInt < 0)
+   //     *freqInt = 0;
     *freqInt = atoi(value);
     IOWR_ALTERA_AVALON_PIO_DATA(DATA32_BASE, *freqInt);
   //  for(i = 0; i < delay; i++);
@@ -486,7 +491,9 @@ void parsRun(unsigned int ii,
         for(j = 0; j < 32; j++) {
             if((strncmp("&", (char *) &(buf[i+4+j]), 1) == 0)) {
                 memcpy(valuelong, (unsigned char *) &(buf[i+4]), j+1);
-                *dacInt = atoi(valuelong);
+               // *dacInt = (atof(valuelong))/(0.0625)*4096; // (0.00015256)
+               // dacTmp = (atof(valuelong))/(0.0625)*4096;
+                 *dacInt = atoi(valuelong);
                 dacTmp = atoi(valuelong);
                 *dac1 =  dacTmp;
                 *dac2 =  dacTmp >> 8;
@@ -504,6 +511,7 @@ void parsRun(unsigned int ii,
         for(n = 0; n < 32; n++) {
             if((strncmp("&", (char *) &(buf[i+4+j+6+k+6+n]), 1) == 0)) { // parsing time for counter
                 memcpy(valuelong, (unsigned char *) &(buf[i+4+j+6+k+6]), n+1);
+               // *step = (atof(valuelong))/(0.0625)*4096;
                 *step = atoi(valuelong);
                 break;
             }
@@ -866,7 +874,7 @@ int simple_server()
     unsigned int plen;
     unsigned int dat_p;
     unsigned int i,j;
-    char str[32] = {0};
+    char str[256] = {0};
     char result_array[32] = {0};
     unsigned char value[32] = {0};
 
@@ -973,8 +981,12 @@ int simple_server()
                make_udp_reply_from_request(buf, result_array, strlen(result_array), myudpport);
            }
            else {
-                 //sprintf(result_array,"[%u, %u]", time, count);
-                 sprintf(result_array,"[%d, %u]", dacInt, count);
+                // sprintf(result_array,"[%u, %u]", time, count);
+               //  if(nSteps == 1)
+                    //  sprintf(result_array,"[%d, %u] End.", dacInt, count);
+               //  else
+                	// sprintf(result_array,"[%d, %u]", dacInt, count);
+                      sprintf(result_array, "%d, %u, %u\n ", dacInt, count, time);
 
                for(i = 0; i < 1500; i++)
                    buf[i] = bufUDP[i];
@@ -1283,7 +1295,7 @@ int simple_server()
                    if(strncmp("hi", (char *) &(buf[i]), 2) == 0) {
                        for(j = 0; j < 1500; j++)
                            bufUDP[j] = buf[j];
-                     strcpy(str, "hi");
+                     strcpy(str, "Hi, I'm not high yet!");
                      goto ANSWER;
                    }
                    if(strncmp("help", (char *) &(buf[i]), 4) == 0) {
@@ -1294,21 +1306,21 @@ int simple_server()
                    }
                    if(strncmp("interrupt", (char *) &(buf[i]), 9) == 0) {
                       nSteps = 0;
-                      strcpy(str, "nSteps = 0, Ok, please wait a few second.");
+                      strcpy(str, "nSteps = 0, please wait a few second.\n");
                       goto ANSWER;
                    }
                    if((strncmp("addr=", (char *) &(buf[i]), 5) == 0)) {	// parsing addr
                        pars(i, value);
                        // send value of addr to the board
                        sendAddr(&addrChar, &addrInt, value);
-                       sprintf(str, "[%d]", addrInt);
+                       sprintf(str, "setAddr=%d", addrInt);
                       goto ANSWER;
                    }
                    if((strncmp("raddr", (char *) &(buf[i]), 5) == 0)) {	// parsing addr
                         addrChar = IORD_ALTERA_AVALON_PIO_DATA(PIO_ADDR_BASE);
                         addrInt = (int)addrChar;
                         sprintf(addrArray,"%d", addrInt);
-                        sprintf(str, "[%d]", addrInt);
+                        sprintf(str, "addr=%d", addrInt);
                         goto ANSWER;
                    }
                    // parsing data post requst
@@ -1316,13 +1328,13 @@ int simple_server()
                        pars(i, value);
                        // send value of data to the board
                        sendData(&wdataChar, &wdataInt, value);
-                       sprintf(str, "[%d]", wdataInt);
+                       sprintf(str, "setData=%d", wdataInt);
                        goto ANSWER;
                    }
                    // parsing data post requst
                    if((strncmp("rdata", (char *) &(buf[i]), 5) == 0)) {	// parsing datas
                        rdata = IORD_ALTERA_AVALON_PIO_DATA(PIO_RDATA_BASE);
-                       sprintf(str, "[%d]", (int)rdata);
+                       sprintf(str, "data=%d", (int)rdata);
                        goto ANSWER;
                    }
                    // parsing freq post requst
@@ -1330,12 +1342,12 @@ int simple_server()
                        pars(i, value);
                        // send value of addr to the board
                        sendFreq(&freqInt, value, &addrChar);
-                       sprintf(str, "[%d]", freqInt);
+                       sprintf(str, "setFreq=%d", freqInt);
                        goto ANSWER;
                    }
                    // parsing freq post requst
                    if((strncmp("rfreq", (char *) &(buf[i]), 5) == 0)) {	// parsing freq
-                       sprintf(str, "[%d]", freqInt);
+                       sprintf(str, "freq=%d", freqInt);
                        goto ANSWER;
                    }
                    // parsing data post requst
@@ -1343,14 +1355,34 @@ int simple_server()
                        pars(i, value);
                        // send value of data to the board
                        sendGate(&gateInt, value, &addrChar);
-                       sprintf(str, "[%d]", gateInt);
+                       sprintf(str, "setGate=%d", gateInt);
                        goto ANSWER;
                    }
                    // parsing freq post requst
                    if((strncmp("rgate", (char *) &(buf[i]), 5) == 0)) {	// parsing freq
-                       sprintf(str, "[%d]", gateInt);
+                       sprintf(str, "gate=%d", gateInt);
                        goto ANSWER;
                    }
+					if((strncmp("reset", (char *) &(buf[i]), 5) == 0)) {	// reset
+						sendAddr(&addrChar, &addrInt, "1");
+						sendData(&wdataChar, &wdataInt, "2");
+						waitRun = 0;
+						readLiveData = 0;
+						nSteps = 0;
+						step = 0;
+						cTime = 120; // sec
+						cTimeChar = 0;
+						dacInt = 4095;
+						dacTmp = 4095;
+						dac1 = 255;
+						dac2 = 15;
+						calibration = 0;
+						calibrationInt = 0;
+						gateInt = 0;
+						freqInt = 49989;
+						sprintf(str, "i'm not high already!");
+						goto ANSWER;
+					}
                    if((strncmp("dac=", (char *) &(buf[i]), 4) == 0)) {	// parsing dac data
                        if(!waitRun) {
                            parsRun(i, &dacInt, &dac1, &dac2, &cTime, &cTimeChar, &step, &nSteps, &calibration);
@@ -1363,8 +1395,12 @@ int simple_server()
                                 sprintf(str, "Please wait ~%d sec or interrupt run!", nSteps*cTime);
                                 goto ANSWER;
                             }
-                   strcpy(str, "Ok");
+                   strcpy(str, "Ok\n");
                    goto ANSWER;
+                   }
+                   if((strncmp("Конец", (char *) &(buf[i]), 5) == 0)) {	// parsing dac data
+					 strcpy(str, "Спасибо за внимание!\n");
+					 goto ANSWER;
                    }
 
                }

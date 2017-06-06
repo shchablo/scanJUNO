@@ -52,27 +52,40 @@ assign signal[15:8] = ram[7];
 assign signal[23:16] = ram[8];
 assign signal[31:24] = ram[9];
 
+
 always@(posedge clk)
 begin
+
+	if(res || ram[0] == 8'b00000001) begin
+		ram[0] <= 0;
+		ram[1] <= 0;
+		
+		ram[2] <= 8'h45;
+		ram[3] <= 8'hC3;
+		ram[4] <= 0;
+		ram[5] <= 0;
+		
+		ram[6] <= 8'h0A;
+		ram[7] <= 8'h00;
+		ram[8] <= 0;
+		ram[9] <= 0;
+		out <= 0;
+		zero_counter <= 0;
+		signal_counter <= 0;
+	end
 	
 	// initialization
 	if(init) begin
 		ram[0] <= 0;
 		ram[1] <= 0;
 		
-		ram[2] <= 8'h00;
-		ram[3] <= 0;
-		//ram[2] <= 8'hF2;
-		//ram[3] <= 8'h01;
-		//ram[2] <= 8'h86;
-		//ram[3] <= 8'h13;
+		ram[2] <= 8'h45;
+		ram[3] <= 8'hC3;
 		ram[4] <= 0;
 		ram[5] <= 0;
 		
-		ram[6] <= 8'h10;
+		ram[6] <= 8'h0A;
 		ram[7] <= 8'h00;
-		//ram[6] <= 8'h02;
-		//ram[7] <= 8'h00;
 		ram[8] <= 0;
 		ram[9] <= 0;
 		out <= 0;
@@ -117,23 +130,6 @@ begin
 	  8'h44:  data_out <= ram[8];
 	  8'h45:  data_out <= ram[9];
 	endcase
-	
-	// Command: Reset 
-	if(ram[0] == 8'b00000001 || res) begin
-		ram[0] <= 0;
-		ram[1] <= 0;
-		ram[2] <= 0;
-		ram[3] <= 0;
-		ram[4] <= 0;
-		ram[5] <= 0;
-		ram[6] <= 0;
-		ram[7] <= 0;
-		ram[8] <= 0;
-		ram[9] <= 0;
-		zero_counter <= 0;
-		signal_counter <= 0;
-  	out <= 0;
-	end
 
 	if(zero_counter < zero) begin 
 		out <= 1'b0;	

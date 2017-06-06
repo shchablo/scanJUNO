@@ -51,7 +51,6 @@ parameter init = 0, idle = 1, write = 2, counter = 3, delay = 4, end_counter = 5
 
 reg [DATA_WIDTH-1:0]ram[ADDR_WIDTH-1:0];
 
-reg flag;
 reg [31:0]count_time;
 reg [31:0]sec;
 reg [31:0]data;
@@ -70,31 +69,42 @@ assign data_ex[31:24] = ram[5];
 assign dwrite = enable;
 
 reg enable;
-always @ (posedge signal) begin
-
-	if(enable) begin
-		data <= data + 1;
-	end
-	else begin
+reg reset;
+reg flag;
+always @ (posedge signal or posedge reset) begin
+	if(reset)
 		data <= 0;
-	end
+	else
+		data <= data + enable;	
 
 end
-always @ (posedge clk) begin
+/*always @ (posedge clk) begin
 
 	if(enable) begin
-		count_time <= count_time + 1;
+		if(signal) begin
+			if(flag)
+				count_time <= count_time + 1;
+			flag <= 0;
+		end
+		else
+			flag <= 1;
+	end else begin
+		count_time <= 0;		
 	end
-	else begin
+end */ 
+
+always @ (posedge signal or posedge reset) begin
+	if(reset)
 		count_time <= 0;
-	end
-
-end
-
+	else 
+		count_time <= count_time + 1;
+end 
 
 always @ (posedge clk) begin 
 	case(state)
 		init: begin
+			if(res)
+				state <= init;
 			ram[0] <= 0;
 			ram[1] <= 0;
 		
@@ -111,15 +121,14 @@ always @ (posedge clk) begin
 			sec <= 0;
 			secTime <= 0;
 			
-			flag = 0;
-			
 			stop <= 0;
 			enable <= 0;
 			state <= idle;
 		end
 		
 		idle: begin
-			if(res || initialization)
+			enable <= 0;
+			if(res || initialization || ram[0] == 8'h01)
 				state <= init;
 			if(start) begin
 				sec <= 0;
@@ -145,6 +154,8 @@ always @ (posedge clk) begin
 		end
 		
 		write: begin
+			if(res)
+				state <= init;
 			case(addr)
 				8'h26:  ram[0] <= data_in;
 				8'h27:  ram[1] <= data_in;
@@ -162,8 +173,13 @@ always @ (posedge clk) begin
 			state <= idle;		
 		end
 		delay: begin
+			if(res)
+				state <= init;
+			if(sec == 49998)
+				reset <= 1;
 			if(sec == 49999) begin
-				enable <= 1;		
+				reset <= 0;
+				enable <= 1;	
 				sec <= 0;
 				secTime <= ram[1];
 				stop <= 0;
@@ -174,8 +190,12 @@ always @ (posedge clk) begin
 			end
 		end
 		counter: begin
+			if(res)
+				state <= init;
+			enable <= 1;	
 	   	if(secTime > 0) begin
 				if(sec == 49999999) begin
+				//if(sec == 499999) begin
 					secTime <= secTime - 1;
 					sec <= 0;
 				end
@@ -202,6 +222,9 @@ always @ (posedge clk) begin
 			end
 		end
 		end_counter : begin
+			if(res)
+				state <= init;
+			enable <= 0;
 			if(sec == 500000) begin
 				stop <= 0;
 				state <= idle;

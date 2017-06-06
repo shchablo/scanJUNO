@@ -268,7 +268,7 @@ wire [7:0]data_DAC;
 );
 
 // Instantiation addr_indicators. Signals and registers declared.
-indicator16 indicator16_hex0
+/*indicator16 indicator16_hex0
 (
  addr[3:0],
  address_hex0
@@ -277,11 +277,15 @@ indicator16 indicator16_hex1
 (
  addr[7:4],
  address_hex1
-);	
+);	*/
 
 	
-assign address_hex3[7:0] = 8'b11000000;
-assign address_hex2[7:0] = 8'b00001001;
+//assign address_hex3[7:0] = 8'b11000000;
+//assign address_hex2[7:0] = 8'b00001001;
+assign address_hex0[7:0] = 8'b11111111;
+assign address_hex1[7:0] = 8'b11111111;
+assign address_hex2[7:0] = 8'b11111111;
+assign address_hex3[7:0] = 8'b11111111;
 
 assign t_SDI = SDI;
 assign t_SCK = SCK;

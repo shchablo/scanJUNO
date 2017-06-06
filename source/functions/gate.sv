@@ -66,23 +66,7 @@ always @ (posedge clk) begin
 		case(addr)
 			8'h20:	ram[0] <= data_in;
 			8'h21:  ram[1] <= data_in;
-			8'h22:  if( !((data_in > 4'd10) || (data_in < 4'd0)) &&
-									((data_in == 4'd1 && keys[0] == 0) ||
-									(data_in == 4'd2 && keys[1] == 0) ||
-									(data_in == 4'd3 && keys[2] == 0) ||
-									(data_in == 4'd4 && keys[3] == 0) ||
-									(data_in == 4'd5 && keys[4] == 0) ||
-									(data_in == 4'd6 && keys[5] == 0) ||
-									(data_in == 4'd7 && keys[6] == 0) ||
-									(data_in == 4'd8 && keys[7] == 0) ||
-									(data_in == 4'd9 && keys[8] == 0) ||
-									(data_in == 4'd10 && keys[9] == 0)))
-									ram[2] <= data_in;
-								else begin
-									ram[2] <= 0;
-									if((data_in > 4'd10) || (data_in < 4'd0))
-										ram[1] <= 8'b00000001; // error
-								end
+			8'h22:  ram[2] <= data_in;
 		endcase
 	end
 		
@@ -93,7 +77,7 @@ always @ (posedge clk) begin
 	  8'h22:  data_out <= ram[2];
 	endcase
 	
-	// decoder for leds (Altera Cyclone III DE0 board)
+/*	// decoder for leds (Altera Cyclone III DE0 board)
 	case(out)
 		4'd0:  leds <= 10'b0000000000;
 		4'd1:  leds <= 10'b0000000001;
@@ -108,7 +92,8 @@ always @ (posedge clk) begin
 		4'd10: leds <= 10'b1000000000;
 	default:
 		leds <= 10'b0000000000;
-	endcase
+	endcase */
+		leds <= 10'b0000000000;
 	
 		if(out == 4'd0) begin
 			ch_pwm_out[0] = 0;
@@ -152,6 +137,9 @@ always @ (posedge clk) begin
 		end
 		if(out == 4'd10) begin
 			ch_pwm_out[9] = gen_in;
+			gen_out = gen_in;
+		end
+		if(out == 4'd11) begin
 			gen_out = gen_in;
 		end
 		
