@@ -41,9 +41,6 @@ Task: For terasIC Altera DE0 Board
 
 Interfaces:
 
-Description for tcl script interface and web interface you can find in the wiki (https://yadi.sk/d/_KovRU8Z3CgPTo).
-
-
 UDP: 
 
 If you want to work with UDP you must use 1200 port. default ip: 192.168.1.4
