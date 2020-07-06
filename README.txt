@@ -35,8 +35,6 @@ Software:
 
 FPGA: Cyclone 3 EP3C16F4844C6
 
-Task: For terasIC Altera DE0 Board 
-(Link: https://yadi.sk/i/qwQsqiwB3D8Gvc)
 --------------------------------------------------------------------------------
 
 Interfaces:
