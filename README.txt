@@ -100,8 +100,6 @@ Commands:
 
 Support:
 
-  Information about the project (wiki): https://yadi.sk/d/_KovRU8Z3CgPTo (Download and run in browser) - Russian language. 
-
-  ShchabloKV@gmail.com (8-906-796-76-53)
+  Shchablo@gmail.com (8-906-796-76-53)
 
 
